@@ -66,7 +66,7 @@
     <button id="nextBtn">⏭</button>
   </div>
   <button id="pickBtn">🎵</button> <input type="file" id="pickFile" accept="audio/*">
-  <audio id="audio" loop><source src="Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
+  <audio id="audio"><source src="Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
 </div>
 
 <div id="canvas-container"></div>
@@ -235,18 +235,19 @@ let isAudioContextSetup = false;
 
 const playlist = [
   { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3' },
+  { name: 'Put Your Head On My Shoulder - Paul Anka', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3' },
+  { name: 'La Casa Verde', src: 'La Casa Verde.mp3' },
   { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3' },
-  { name: 'Fly Me To The Moon - Frank Sinatra', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3' },
   { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3" },
   { name: 'Kharmasutra', src: 'Kharmasutra.mp3' },
-  { name: 'La Casa Verde', src: 'La Casa Verde.mp3' },
   { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3' },
-  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3' },
   { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3' },
-  { name: 'Put Your Head On My Shoulder - Paul Anka', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3' },
   { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3' },
   { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3' },
-  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3" }
+  { name: 'Fly Me To The Moon - Frank Sinatra', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3' },
+  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3" },
+  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3' }
+
 ];
 let currentTrackIndex = 0;
 
@@ -278,6 +279,9 @@ function updateTrackDisplay(name) {
 }
 
 function playTrack(index) {
+  if (!isAudioContextSetup) setupAudioContext();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  
   currentTrackIndex = index;
   const track = playlist[index];
   audio.src = track.src;
@@ -287,13 +291,11 @@ function playTrack(index) {
 }
 
 document.getElementById('nextBtn').onclick = () => {
-  currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-  playTrack(currentTrackIndex);
+  playTrack((currentTrackIndex + 1) % playlist.length);
 };
 
 document.getElementById('prevBtn').onclick = () => {
-  currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
-  playTrack(currentTrackIndex);
+  playTrack((currentTrackIndex - 1 + playlist.length) % playlist.length);
 };
 
 function animate() {
