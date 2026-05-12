@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>La Galaxia de Maricela ✨</title>
+  <style>
+    body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+    #canvas-container { position: fixed; inset: 0; }
+    
+    .center-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none; 
+      text-shadow: 0 0 15px #ff69b4, 0 0 30px #ff1493;
+      z-index: 50;
+      transition: opacity 1s;
+      width: 85%;
+    }
+
+    .hud {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(10, 10, 20, 0.7); backdrop-filter: blur(10px);
+      padding: 12px 20px; border-radius: 50px; border: 1px solid rgba(255,105,180,0.3);
+      display: flex; gap: 12px; align-items: center; color: white; z-index: 100;
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.2);
+    }
+    .track-info {
+      position: fixed; top: 20px; right: 20px;
+      background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(5px);
+      padding: 10px 15px; border-radius: 15px; border: 1px solid rgba(255,105,180,0.2);
+      color: white; font-size: 0.9rem; text-align: right; pointer-events: none;
+      z-index: 100; transition: opacity 0.5s;
+    }
+    .playlist-controls { display: flex; gap: 8px; align-items: center; }
+    button {
+      background: #ff69b4; border: none; padding: 8px 16px; border-radius: 20px;
+      color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    button:hover { background: #ff1493; transform: scale(1.05); }
+    input[type=file] { display: none; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+<div id="dynamic-center-text" class="center-text">Es tu universo</div>
+
+<div id="track-display" class="track-info" style="opacity: 0;">
+  <div style="font-size: 0.7rem; color: #ff69b4;">REPRODUCIENDO</div>
+  <div id="track-name">Donde Nadie Pueda Ir</div>
+</div>
+
+<div class="hud">
+  <div class="playlist-controls">
+    <button id="prevBtn">⏮</button>
+    <button id="playBtn">▶ Iniciar</button>
+    <button id="nextBtn">⏭</button>
+  </div>
+  <button id="pickBtn">🎵</button> <input type="file" id="pickFile" accept="audio/*">
+  <audio id="audio" loop><source src="Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
+</div>
+
+<div id="canvas-container"></div>
+
+<script>
+let scene, camera, renderer, controls, points, phrasesGroup;
+
+const params = {
+  count: 65000,
+  size: 0.016,
+  radius: 5,
+  branches: 3,
+  spin: 1.3,
+  randomness: 0.25,
+  colorInside: '#1e90ff', 
+  colorOutside: '#4b0082'
+};
+
+const phrases = [
+  'la mamá de mis hijos ❤️', 'Soncitomon', 'Poncitoson', 'Pondequeso', 'La chiquita más linda 🐣', 'Tan pequeña y tan hermosa ✨', 'Elamordemivida:33',
+  'Mi lugar favorito es contigo', 'Te Amodoro 💖', 'Te Pomodoro', '7w7 me encata agarrarte del cuello', 'Amo Agarrarte el rabo🍑',
+  'Pequeñita, pero eres mi mundo entero 🌎', 'Eres perfecta para mi💖', 'Tus ojos son grandes, bonitos y profundos 🥺',
+  'Mi gran amor 💖', 'Me encanta tu cuerpo ❤️‍🔥', 'Toda shikita y ya no cabes en mis pensamientos 💭',
+  'Lo más grande de mi vida eres tu mi shikita ✨', 'Gracias al todo porque llegaste a mi vida ✨', 'Un tesoro pequeño para cuidar por siempre 💎', 'Gracias por ser un apoyo en mi vida', 'Quedate mas, no te lleves mi felicidad',
+  'Eres mi punto favorito en el mapa 📍', 'Tan chiquita y me llenas el alma 🌟', 'Mi pequeña dosis de felicidad 💊',
+  'Tu sonrisa es mi motor 😊', 'Esa carita tan linda. 🫠', 'Tus ojos brillan más que estas estrellas ✨',
+  'Ojitos que me enamoran 😍', 'Tus ojotes hermosos me vuelven loco 👁️❤️',
+  'Esa mirada profunda en la que amo perderme ✨', 'Tan linda que no es real 💭', 'Eres arte 🎨', 
+  'Esa mirada que me desarma 👀', 'Perfección en cada curva ✨',
+  'Me encata hacerte el amor 7w7', 'gemi2 de angelito 🔥',
+  'Eres mi pasión más intensa y mi amor eterno ❤️‍🔥',
+  'Me encanta perderme en tu cuerpo 💋', 'Eres la Jinchūriki de esta bestia🍆', 'Tuyo siempre 🥺','Culote en constante expancion 🍑',
+  'Nuestra química es de otro planeta 🌌🔥', 'Hacemos el delicioso? 7w7', 'Me lo comes tan rico 🫠 que muero', 'Eres mi comida favorita', 
+  'Eres el amor de mi vida y mi deseo más grande 🌹', 'Jimeno extraña a Jimena UnU', 'Me encanta hacerte mia ❤️‍🔥❤️‍🔥',
+  'Eres mi obra maestra favorita 🖼️', 'Tu carita es mi paisaje preferido 🌄', 'Tus labios, mi perdición 💋',
+  'Mi amor ❤️', 'Mi cielo 🌌', 'Eres mi todo ✨', 'Mi vida 💖', 'Te quiero infinito ♾️', 'proyecto familia :3',
+  'Mi tesoro 💎', 'Siempre tú', 'Anhelo tu sonrisa 😊', 'Moriria por ti', 'Anhelo tu cuerpo *-*', 'Gracias por estar 🙏', 'Gracias por quererme ♡', 'Tego unas ganas increibles de hacerte mia una y otra vez 😏', 'Te necesito, mi ser te llama❤️‍🔥', 
+  'Me haces el más feliz 💖', 'Contigo el mundo es mejor 🌎', 'Mi lugar favorito es contigo 🏠', 
+  'Mi razón de sonreír 😊', 'Mi calma en el caos 🌊', 'Mi lugar seguro 🫶', 'Eres mi paz 🕊️',
+  'Eres un sueño hecho realidad 🌙', 'Eres perfecta para mí 💘', 'Mi felicidad eres tú 😄','(ɔ◔‿◔)ɔ ♥',
+  'Mi corazón te eligió 💓', 'Eres lo más bonito que tengo 🌷', 'Inseparables hoy y siempre 💞',
+  'Mi hogar son tus brazos 🏠', 'Elegirte fue mi mejor acierto ✅', 'Te amo más de lo que las palabras dicen 🗣️',
+  'Eres mi "por siempre" ♾️', 'Mi vida es más linda si estás tú 🌸', 'Eres mi debilidad favorita 🫠',
+  'Cada segundo contigo es un regalo 🎁', 'Eres mi pensamiento constante 💭',
+  'Orbitando en tu amor 🪐', 'Mi universo eres tú 🌌', 'Luz de mi vida 🕯️', 
+  'Más allá del infinito 🚀', 'Un millón de galaxias y te elijo a ti ✨', 'Nuestra propia galaxia 💫',
+  'Mi estrella favorita ⭐', 'Eres magia pura ✨', 'Mi pedacito de cielo ☁️', 
+  'Eres mi destino 💫', 'Mi sueño más lindo 🌙', 'Tú haces que mi mundo gire 🌀',
+  'Nuestra conexión es universal 🌌✨', 'Brillas más que el sol ☀️', 'Mi eclipse favorito 🌑',
+  'Eres el centro de mi universo 🌌', 'Un viaje a las estrellas a tu lado 🚀', 'Nuestra historia está escrita en el cielo ✍️',
+  'Tacita de cafe con leche ☕️', 'Guapa 😍', 'Reinita 👑', 'Dulzura infinita 🍯', 
+  'Mi alegría diaria ☀️', 'Mi todo bonito 💖', 'Mi casualidad favorita 🍀', 
+  'Mi abrazo favorito 🤗', 'Eres mi canción favorita 🎶', '¿Mia de mi? 🥺','Eres mi notificación preferida 📱',
+  'Amo nuestros momentos juntos ⏳', 'Eres mi sol en días nublados ☁️', 'Mi postre favorito 🍰', '444',
+  'Eres mi vitamina diaria 💊', 'Tu risa es mi melodía preferida 🎵', 'Despues de tus ojitos yo no se que mas mirar 👀✨', 'Contigo todo es más dulce 🍭','Tequiamodorointergalactico','( ♡w♡)','Me encanta tu carita hermosa♡♡', 'TEAMOOOO', 'Ahora que esta todo en silencio...🎵🎵', '44',
+];
+
+function init() {
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(4, 3, 5);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  generateGalaxy();
+  addPhrases();
+  animate();
+}
+
+function generateGalaxy() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(params.count * 3);
+  const colors = new Float32Array(params.count * 3);
+
+  const colorInside = new THREE.Color(params.colorInside);
+  const colorOutside = new THREE.Color(params.colorOutside);
+
+  for(let i = 0; i < params.count; i++) {
+    const i3 = i * 3;
+    const radius = Math.random() * params.radius;
+    const branchAngle = (i % params.branches) / params.branches * Math.PI * 2;
+    const spinAngle = radius * params.spin;
+
+    const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
+    const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
+    const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
+
+    positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    positions[i3 + 1] = randomY;
+    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+    const mixedColor = colorInside.clone().lerp(colorOutside, radius / params.radius);
+    colors[i3] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: params.size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true
+  });
+
+  points = new THREE.Points(geometry, material);
+  scene.add(points);
+}
+
+function addPhrases() {
+  phrasesGroup = new THREE.Group();
+  phrases.forEach((text, i) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = 1024; 
+    canvas.height = 256; 
+    
+    const isSpecial = text.includes('pequeña');
+    
+    ctx.font = isSpecial ? 'Bold 42px Arial' : '32px Arial';
+
+    ctx.fillStyle = '#ffffff';
+    
+    ctx.textAlign = 'center';
+    
+    ctx.shadowColor = 'rgba(138, 43, 226, 1)'; 
+    ctx.shadowBlur = 12;
+    
+
+    ctx.fillText(text, 512, 128); 
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ 
+        map: texture, 
+        transparent: true, 
+        blending: THREE.AdditiveBlending 
+    });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    
+    const angle = (i / phrases.length) * Math.PI * 2;
+    const radiusVar = 1.2 + Math.random() * 3.8;
+    const yVar = (Math.random() - 0.5) * 2;
+    
+    sprite.position.set(Math.cos(angle) * radiusVar, yVar, Math.sin(angle) * radiusVar);
+    
+    const scaleFactor = isSpecial ? 1.4 : 0.8 + Math.random() * 0.4;
+    sprite.scale.set(scaleFactor * 2, scaleFactor * 0.5, 1);
+    
+    phrasesGroup.add(sprite);
+  });
+  scene.add(phrasesGroup);
+}
+let analyser, dataArray;
+let audioCtx;
+let isAudioContextSetup = false;
+
+const playlist = [
+  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3' },
+  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3' },
+  { name: 'Fly Me To The Moon - Frank Sinatra', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3' },
+  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3" },
+  { name: 'Kharmasutra', src: 'Kharmasutra.mp3' },
+  { name: 'La Casa Verde', src: 'La Casa Verde.mp3' },
+  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3' },
+  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3' },
+  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3' },
+  { name: 'Put Your Head On My Shoulder - Paul Anka', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3' },
+  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3' },
+  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3' },
+  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3" }
+];
+let currentTrackIndex = 0;
+
+function setupAudioContext() {
+  if (isAudioContextSetup) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  const source = audioCtx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  analyser.fftSize = 256;
+  const bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+  isAudioContextSetup = true;
+
+  // Rotación automática: cuando termina una canción, sigue la siguiente
+  audio.onended = () => {
+    currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+    playTrack(currentTrackIndex);
+  };
+}
+
+function updateTrackDisplay(name) {
+  const display = document.getElementById('track-display');
+  const nameElem = document.getElementById('track-name');
+  nameElem.textContent = name;
+  display.style.opacity = 1;
+  setTimeout(() => { if(display) display.style.opacity = 0.8; }, 2000);
+}
+
+function playTrack(index) {
+  currentTrackIndex = index;
+  const track = playlist[index];
+  audio.src = track.src;
+  audio.play();
+  playBtn.textContent = '⏸ Pausar';
+  updateTrackDisplay(track.name);
+}
+
+document.getElementById('nextBtn').onclick = () => {
+  currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+  playTrack(currentTrackIndex);
+};
+
+document.getElementById('prevBtn').onclick = () => {
+  currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+  playTrack(currentTrackIndex);
+};
+
+function animate() {
+  requestAnimationFrame(animate);
+  const time = Date.now() * 0.002;
+
+  let bass = 0;
+  if (isAudioContextSetup && !audio.paused) {
+    analyser.getByteFrequencyData(dataArray);
+    bass = dataArray[2] / 255; 
+  }
+
+  // Las estrellas reaccionan a los bajos
+  points.material.size = params.size * (1 + bass * 1.5);
+  points.rotation.y += 0.0006 + (bass * 0.005);
+  phrasesGroup.rotation.y += 0.0012 + (bass * 0.002);
+  
+  // Las frases laten con el ritmo
+  phrasesGroup.children.forEach(sprite => {
+    if (!sprite.userData.baseScale) {
+        sprite.userData.baseScale = sprite.scale.x / 2;
+    }
+    const s = sprite.userData.baseScale * (1 + bass * 0.4);
+    sprite.scale.set(s * 2, s * 0.5, 1);
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+  
+  const pulseScale = 1 + Math.sin(time) * 0.1 + (bass * 0.2);
+  const centerTextElement = document.getElementById('dynamic-center-text');
+  if(centerTextElement) {
+    centerTextElement.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
+  }
+}
+
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+playBtn.onclick = () => {
+  if (!isAudioContextSetup) setupAudioContext();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  if (audio.paused) { 
+    audio.play(); 
+    playBtn.textContent = '⏸ Pausar'; 
+    updateTrackDisplay(playlist[currentTrackIndex].name);
+  }
+  else { 
+    audio.pause(); 
+    playBtn.textContent = '▶ Iniciar'; 
+  }
+};
+
+document.getElementById('pickBtn').onclick = () => document.getElementById('pickFile').click();
+document.getElementById('pickFile').onchange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    if (!isAudioContextSetup) setupAudioContext();
+    const url = URL.createObjectURL(file);
+    const newTrack = { name: file.name.split('.')[0], src: url };
+    playlist.push(newTrack);
+    playTrack(playlist.length - 1);
+  }
+};
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const centerPhrases = [
+  "Para mi cosita rica UwU 💖",
+  "Manuela ✨",
+  "¡Que bonito que me miras!",
+  "Que bonito y que espacial 💫🌙",
+  "Te amo hasta el infinito ♾️",
+  "Mi bb shikita :3"
+];
+
+let phraseIndex = 0;
+function updateCenterText() {
+  const centerTextElement = document.getElementById('dynamic-center-text');
+  if(centerTextElement) {
+    centerTextElement.style.opacity = 0;
+    setTimeout(() => {
+      phraseIndex = (phraseIndex + 1) % centerPhrases.length;
+      centerTextElement.textContent = centerPhrases[phraseIndex];
+      centerTextElement.style.opacity = 0.8;
+    }, 1000);
+  }
+}
+
+setInterval(updateCenterText, 5000);
+
+init();
+</script>
+</body>
+</html>
