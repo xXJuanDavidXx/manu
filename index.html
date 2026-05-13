@@ -285,19 +285,19 @@ let audioCtx;
 let isAudioContextSetup = false;
 
 const playlist = [
-  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3', colors: { in: '#1e90ff', out: '#4b0082' } },
-  { name: 'Put Your Head On My Shoulder', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3', colors: { in: '#ff69b4', out: '#ffffff' } },
-  { name: 'La Casa Verde', src: 'La Casa Verde.mp3', colors: { in: '#00ff7f', out: '#104010' } },
-  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3', colors: { in: '#ff4500', out: '#4b0082' } },
-  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3", colors: { in: '#f4a460', out: '#2f4f4f' } },
-  { name: 'Kharmasutra', src: 'Kharmasutra.mp3', colors: { in: '#9400d3', out: '#000000' } },
-  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3', colors: { in: '#ffd700', out: '#8b4513' } },
-  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3', colors: { in: '#b22222', out: '#000000' } },
-  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3', colors: { in: '#adff2f', out: '#556b2f' } },
-  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3', colors: { in: '#00ffff', out: '#00008b' } },
-  { name: 'Fly Me To The Moon', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3', colors: { in: '#ffcf40', out: '#1a1a1a' } },
-  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3", colors: { in: '#ff7f50', out: '#2e8b57' } },
-  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3', colors: { in: '#ff00ff', out: '#4b0082' } }
+  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3', colors: { in: '#00ffff', out: '#6a0dad' } }, // Cyan -> Morado
+  { name: 'Put Your Head On My Shoulder', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3', colors: { in: '#ff1493', out: '#00bfff' } }, // Rosa -> Azul Eléctrico
+  { name: 'La Casa Verde', src: 'La Casa Verde.mp3', colors: { in: '#00ff88', out: '#ff00ff' } }, // Esmeralda -> Magenta (Psicodélico)
+  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3', colors: { in: '#ff4500', out: '#240046' } }, // Naranja Fuego -> Vacío Profundo
+  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3", colors: { in: '#ff8c00', out: '#008080' } }, // Ámbar -> Teal Cósmico
+  { name: 'Kharmasutra', src: 'Kharmasutra.mp3', colors: { in: '#bf00ff', out: '#10002b' } }, // Neón Morado -> Indigo
+  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3', colors: { in: '#ffd700', out: '#ff00ff' } }, // Sol Dorado -> Magenta
+  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3', colors: { in: '#e01e37', out: '#3a0ca3' } }, // Rojo Rubí -> Azul Profundo
+  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3', colors: { in: '#ccff00', out: '#ff007f' } }, // Lima Ácido -> Rosa Neón
+  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3', colors: { in: '#4cc9f0', out: '#4361ee' } }, // Azul Estrella -> Azul Real
+  { name: 'Fly Me To The Moon', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3', colors: { in: '#ffbe0b', out: '#023e8a' } }, // Oro -> Azul Medianoche
+  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3", colors: { in: '#fb5607', out: '#3a86ff' } }, // Naranja Atardecer -> Azul Nebulosa
+  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3', colors: { in: '#ff006e', out: '#8338ec' } } // Magenta -> Violeta
 ];
 let currentTrackIndex = 0;
 
