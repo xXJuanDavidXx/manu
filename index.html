@@ -72,7 +72,7 @@
 <div id="canvas-container"></div>
 
 <script>
-let scene, camera, renderer, controls, points, phrasesGroup;
+let scene, camera, renderer, controls, points, phrasesGroup, bgStars;
 
 const params = {
   count: 65000,
@@ -126,7 +126,7 @@ const phrases = [
 
 function init() {
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(4, 3, 5);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -139,7 +139,33 @@ function init() {
 
   generateGalaxy();
   addPhrases();
+  addBackgroundStars();
+
   animate();
+}
+
+function addBackgroundStars() {
+  const geometry = new THREE.BufferGeometry();
+  const count = 15000;
+  const positions = new Float32Array(count * 3);
+  for(let i = 0; i < count; i++) {
+    const r = 20 + Math.random() * 30;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.random() * Math.PI * 2;
+    positions[i*3] = r * Math.sin(theta) * Math.cos(phi);
+    positions[i*3+1] = r * Math.sin(theta) * Math.sin(phi);
+    positions[i*3+2] = r * Math.cos(theta);
+  }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const material = new THREE.PointsMaterial({ 
+    size: 0.015, 
+    color: 0xffffff, 
+    transparent: true, 
+    opacity: 0.6,
+    sizeAttenuation: true 
+  });
+  bgStars = new THREE.Points(geometry, material);
+  scene.add(bgStars);
 }
 
 function generateGalaxy() {
@@ -310,8 +336,18 @@ function animate() {
 
   // Las estrellas reaccionan a los bajos
   points.material.size = params.size * (1 + bass * 1.5);
+  
+  // Color pulsante: cambia ligeramente el tono con los bajos
+  const hueShift = Math.sin(time * 0.5) * 0.1 + (bass * 0.2);
+  points.material.color.setHSL(0.6 + hueShift, 0.8, 0.8);
+
+  // Rotación automática
   points.rotation.y += 0.0006 + (bass * 0.005);
   phrasesGroup.rotation.y += 0.0012 + (bass * 0.002);
+
+  if (bgStars) {
+    bgStars.rotation.y += 0.0001;
+  }
   
   // Las frases laten con el ritmo
   phrasesGroup.children.forEach(sprite => {
