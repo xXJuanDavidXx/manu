@@ -73,6 +73,10 @@
 
 <script>
 let scene, camera, renderer, controls, points, phrasesGroup, bgStars;
+let initialPositions, heartPositions;
+let morphFactor = 0;
+let targetMorphFactor = 0;
+let isHeartActive = false;
 
 const params = {
   count: 65000,
@@ -141,6 +145,17 @@ function init() {
   addPhrases();
   addBackgroundStars();
 
+  // Hacer el texto central interactivo para el corazón
+  const centerTextElement = document.getElementById('dynamic-center-text');
+  if(centerTextElement) {
+    centerTextElement.style.pointerEvents = 'auto';
+    centerTextElement.style.cursor = 'pointer';
+    centerTextElement.onclick = () => {
+      isHeartActive = !isHeartActive;
+      targetMorphFactor = isHeartActive ? 1 : 0;
+    };
+  }
+
   animate();
 }
 
@@ -170,7 +185,8 @@ function addBackgroundStars() {
 
 function generateGalaxy() {
   const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(params.count * 3);
+  initialPositions = new Float32Array(params.count * 3);
+  heartPositions = new Float32Array(params.count * 3);
   const colors = new Float32Array(params.count * 3);
 
   const colorInside = new THREE.Color(params.colorInside);
@@ -186,9 +202,18 @@ function generateGalaxy() {
     const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
     const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * params.randomness * radius;
 
-    positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
-    positions[i3 + 1] = randomY;
-    positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+    initialPositions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+    initialPositions[i3 + 1] = randomY;
+    initialPositions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+    // Generar forma de corazón
+    const t = Math.random() * Math.PI * 2;
+    const hx = 16 * Math.pow(Math.sin(t), 3);
+    const hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+    const hScale = 0.15;
+    heartPositions[i3] = hx * hScale + (Math.random() - 0.5) * 0.5;
+    heartPositions[i3 + 1] = hy * hScale + (Math.random() - 0.5) * 0.5;
+    heartPositions[i3 + 2] = (Math.random() - 0.5) * 1.5;
 
     const mixedColor = colorInside.clone().lerp(colorOutside, radius / params.radius);
     colors[i3] = mixedColor.r;
@@ -196,7 +221,7 @@ function generateGalaxy() {
     colors[i3 + 2] = mixedColor.b;
   }
 
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('position', new THREE.BufferAttribute(initialPositions.slice(), 3));
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
   const material = new THREE.PointsMaterial({
@@ -260,20 +285,19 @@ let audioCtx;
 let isAudioContextSetup = false;
 
 const playlist = [
-  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3' },
-  { name: 'Put Your Head On My Shoulder - Paul Anka', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3' },
-  { name: 'La Casa Verde', src: 'La Casa Verde.mp3' },
-  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3' },
-  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3" },
-  { name: 'Kharmasutra', src: 'Kharmasutra.mp3' },
-  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3' },
-  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3' },
-  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3' },
-  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3' },
-  { name: 'Fly Me To The Moon - Frank Sinatra', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3' },
-  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3" },
-  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3' }
-
+  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3', colors: { in: '#1e90ff', out: '#4b0082' } },
+  { name: 'Put Your Head On My Shoulder', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3', colors: { in: '#ff69b4', out: '#ffffff' } },
+  { name: 'La Casa Verde', src: 'La Casa Verde.mp3', colors: { in: '#00ff7f', out: '#104010' } },
+  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3', colors: { in: '#ff4500', out: '#4b0082' } },
+  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3", colors: { in: '#f4a460', out: '#2f4f4f' } },
+  { name: 'Kharmasutra', src: 'Kharmasutra.mp3', colors: { in: '#9400d3', out: '#000000' } },
+  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3', colors: { in: '#ffd700', out: '#8b4513' } },
+  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3', colors: { in: '#b22222', out: '#000000' } },
+  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3', colors: { in: '#adff2f', out: '#556b2f' } },
+  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3', colors: { in: '#00ffff', out: '#00008b' } },
+  { name: 'Fly Me To The Moon', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3', colors: { in: '#ffcf40', out: '#1a1a1a' } },
+  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3", colors: { in: '#ff7f50', out: '#2e8b57' } },
+  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3', colors: { in: '#ff00ff', out: '#4b0082' } }
 ];
 let currentTrackIndex = 0;
 
@@ -304,6 +328,24 @@ function updateTrackDisplay(name) {
   setTimeout(() => { if(display) display.style.opacity = 0.8; }, 2000);
 }
 
+function updateGalaxyColors(colorIn, colorOut) {
+  const colors = points.geometry.attributes.color.array;
+  const inColor = new THREE.Color(colorIn);
+  const outColor = new THREE.Color(colorOut);
+
+  for(let i = 0; i < params.count; i++) {
+    const i3 = i * 3;
+    const x = initialPositions[i3];
+    const z = initialPositions[i3 + 2];
+    const dist = Math.sqrt(x*x + z*z) / params.radius;
+    const mixed = inColor.clone().lerp(outColor, dist);
+    colors[i3] = mixed.r;
+    colors[i3+1] = mixed.g;
+    colors[i3+2] = mixed.b;
+  }
+  points.geometry.attributes.color.needsUpdate = true;
+}
+
 function playTrack(index) {
   if (!isAudioContextSetup) setupAudioContext();
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
@@ -314,15 +356,11 @@ function playTrack(index) {
   audio.play();
   playBtn.textContent = '⏸ Pausar';
   updateTrackDisplay(track.name);
+  
+  if(track.colors) {
+    updateGalaxyColors(track.colors.in, track.colors.out);
+  }
 }
-
-document.getElementById('nextBtn').onclick = () => {
-  playTrack((currentTrackIndex + 1) % playlist.length);
-};
-
-document.getElementById('prevBtn').onclick = () => {
-  playTrack((currentTrackIndex - 1 + playlist.length) % playlist.length);
-};
 
 function animate() {
   requestAnimationFrame(animate);
@@ -334,26 +372,37 @@ function animate() {
     bass = dataArray[2] / 255; 
   }
 
+  // Suavizar transición de morphing
+  morphFactor += (targetMorphFactor - morphFactor) * 0.05;
+  
+  const positions = points.geometry.attributes.position.array;
+  for(let i = 0; i < params.count; i++) {
+    const i3 = i * 3;
+    const targetX = initialPositions[i3] * (1 - morphFactor) + heartPositions[i3] * morphFactor;
+    const targetY = initialPositions[i3+1] * (1 - morphFactor) + heartPositions[i3+1] * morphFactor;
+    const targetZ = initialPositions[i3+2] * (1 - morphFactor) + heartPositions[i3+2] * morphFactor;
+    
+    positions[i3] += (targetX - positions[i3]) * 0.1;
+    positions[i3+1] += (targetY - positions[i3+1]) * 0.1;
+    positions[i3+2] += (targetZ - positions[i3+2]) * 0.1;
+  }
+  points.geometry.attributes.position.needsUpdate = true;
+
   // Las estrellas reaccionan a los bajos
   points.material.size = params.size * (1 + bass * 1.5);
   
-  // Color pulsante: cambia ligeramente el tono con los bajos
-  const hueShift = Math.sin(time * 0.5) * 0.1 + (bass * 0.2);
-  points.material.color.setHSL(0.6 + hueShift, 0.8, 0.8);
+  // Color pulsante
+  const hueShift = Math.sin(time * 0.5) * 0.05 + (bass * 0.1);
+  points.material.color.setHSL(0.6 + hueShift, 0.8, 0.9);
 
   // Rotación automática
   points.rotation.y += 0.0006 + (bass * 0.005);
   phrasesGroup.rotation.y += 0.0012 + (bass * 0.002);
 
-  if (bgStars) {
-    bgStars.rotation.y += 0.0001;
-  }
+  if (bgStars) bgStars.rotation.y += 0.0001;
   
-  // Las frases laten con el ritmo
   phrasesGroup.children.forEach(sprite => {
-    if (!sprite.userData.baseScale) {
-        sprite.userData.baseScale = sprite.scale.x / 2;
-    }
+    if (!sprite.userData.baseScale) sprite.userData.baseScale = sprite.scale.x / 2;
     const s = sprite.userData.baseScale * (1 + bass * 0.4);
     sprite.scale.set(s * 2, s * 0.5, 1);
   });
@@ -363,9 +412,7 @@ function animate() {
   
   const pulseScale = 1 + Math.sin(time) * 0.1 + (bass * 0.2);
   const centerTextElement = document.getElementById('dynamic-center-text');
-  if(centerTextElement) {
-    centerTextElement.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
-  }
+  if(centerTextElement) centerTextElement.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
 }
 
 const audio = document.getElementById('audio');
@@ -383,6 +430,14 @@ playBtn.onclick = () => {
     audio.pause(); 
     playBtn.textContent = '▶ Iniciar'; 
   }
+};
+
+document.getElementById('nextBtn').onclick = () => {
+  playTrack((currentTrackIndex + 1) % playlist.length);
+};
+
+document.getElementById('prevBtn').onclick = () => {
+  playTrack((currentTrackIndex - 1 + playlist.length) % playlist.length);
 };
 
 document.getElementById('pickBtn').onclick = () => document.getElementById('pickFile').click();
