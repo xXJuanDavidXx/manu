@@ -47,31 +47,6 @@ export function heartShape(count, scale = 0.34) {
   return out;
 }
 
-// Lemniscata (símbolo de infinito), rellena con grosor.
-export function infinityShape(count, scale = 5.2) {
-  const out = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    const t = Math.random() * Math.PI * 2;
-    const d = 1 + Math.sin(t) * Math.sin(t);
-    const r = 0.7 + Math.random() * 0.3;
-    out[i * 3] = (scale * Math.cos(t) / d) * r + (Math.random() - 0.5) * 0.3;
-    out[i * 3 + 1] = (scale * Math.sin(t) * Math.cos(t) / d) * r + (Math.random() - 0.5) * 0.3;
-    out[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
-  }
-  return out;
-}
-
-// Nombre en 3D (nube de puntos a partir del texto).
-export function textShape(count, text, { scale = 11, font = 'bold 190px Georgia' } = {}) {
-  return sampleCanvas(count, (ctx, w, h) => {
-    ctx.fillStyle = '#fff';
-    ctx.font = font;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, w / 2, h / 2);
-  }, { width: 1400, height: 384, scale, depth: 0.6, step: 2 });
-}
-
 // Sigilo de Hécate (Strophalos / "rueda de Hécate"): tres brazos serpentinos en
 // simetría triple dentro de un círculo, con un núcleo central. Es el sigilo
 // clásico de la triple diosa. Se dibuja con trazos para que, al muestrearlo,
@@ -147,13 +122,11 @@ export function tripleMoonShape(count, scale = 9.5) {
   }, { width: 1200, height: 384, scale, depth: 0.7, step: 2 });
 }
 
-// Devuelve la lista ordenada de formas disponibles para ciclar.
-export function buildShapes(count, name = 'MANUELA') {
+// Formas disponibles para el morph: el corazón y la simbología de Hécate.
+export function buildShapes(count) {
   return [
     { key: 'heart', label: 'Corazón 💖', positions: heartShape(count) },
-    { key: 'name', label: `${name} ✨`, positions: textShape(count, name) },
     { key: 'moon', label: 'Luna triple 🌙', positions: tripleMoonShape(count) },
     { key: 'sigil', label: 'Sigilo de Hécate 🜛', positions: hecateWheelShape(count) },
-    { key: 'infinity', label: 'Infinito ♾️', positions: infinityShape(count) },
   ];
 }

@@ -10,7 +10,7 @@ import { Galaxy } from './core/Galaxy.js';
 import { Phrases } from './core/Phrases.js';
 import { Scenery } from './core/Scenery.js';
 import { buildShapes } from './core/shapes.js';
-import { phrases, centerPhrases, playlist } from './data.js';
+import { phrases, playlist } from './data.js';
 
 // --- ajuste por dispositivo (optimización) ---
 const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
@@ -51,12 +51,12 @@ scene.add(galaxy.points);
 
 const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
 
-// Frases (Arial) y nombre "MANUELA" (Georgia): fuentes del sistema, se dibujan ya.
+// Frases en Arial (fuente del sistema): se dibujan ya.
 // En móvil las texturas van a la mitad (menos VRAM y menos coste de subida).
 const phraseCloud = new Phrases(phrases, { texScale: isMobile ? 0.5 : 1 });
 scene.add(phraseCloud.group);
 
-const shapes = buildShapes(PARTICLE_COUNT, 'MANUELA');
+const shapes = buildShapes(PARTICLE_COUNT);
 
 const audio = document.getElementById('audio');
 const audioProcessor = new AudioProcessor(audio);
@@ -73,22 +73,40 @@ const bloom = new UnrealBloomPass(
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
-// --- máquina de estados del morph ---
+// --- morph automático y temporizado ---
+// La galaxia se mantiene pura un rato y, cada tanto, se transfigura en una forma
+// (corazón, nombre, luna triple, sigilo, infinito), la sostiene y vuelve.
 let morphFactor = 0;
 let targetMorph = 0;
-let shapeIdx = -1;    // -1 = galaxia
-let pending = null;   // forma pendiente de aplicar tras dispersarse
+let shapeIdx = -1;       // índice de la última forma mostrada
+let pending = null;      // forma pendiente de aplicar
+let showingShape = false;
+let autoTimer = 0;
 
-function cycleShape() {
-  shapeIdx++;
-  if (shapeIdx >= shapes.length) {
-    shapeIdx = -1;
-    pending = null;
-    targetMorph = 0; // vuelve a la galaxia
-    return;
+const rand = (a, b) => a + Math.random() * (b - a);
+// Tiempos aleatorios y espaciados: la galaxia se sostiene largo entre formas.
+const GALAXY_HOLD = () => rand(24, 55); // galaxia pura hasta la próxima forma
+const SHAPE_HOLD = () => rand(7, 12);   // cuánto se mantiene cada forma
+let nextDelay = GALAXY_HOLD();
+
+function updateAutoMorph(dt) {
+  autoTimer += dt;
+  if (autoTimer < nextDelay) return;
+  autoTimer = 0;
+
+  if (!showingShape) {
+    // elige una forma al azar (sin repetir la anterior)
+    let next = Math.floor(Math.random() * shapes.length);
+    if (shapes.length > 1 && next === shapeIdx) next = (next + 1) % shapes.length;
+    shapeIdx = next;
+    pending = shapes[shapeIdx]; // se aplica en el bucle cuando morph≈0
+    showingShape = true;
+    nextDelay = SHAPE_HOLD();
+  } else {
+    targetMorph = 0;            // vuelve a la galaxia
+    showingShape = false;
+    nextDelay = GALAXY_HOLD();
   }
-  pending = shapes[shapeIdx]; // dispersa y luego se reforma en el bucle
-  targetMorph = 0;
 }
 
 // --- reproductor ---
@@ -146,22 +164,6 @@ document.getElementById('pickFile').onchange = (e) => {
 };
 audio.onended = () => playTrack(currentTrackIndex + 1);
 
-// --- texto central: clic = cambia de forma ---
-const centerText = document.getElementById('dynamic-center-text');
-centerText.style.pointerEvents = 'auto';
-centerText.style.cursor = 'pointer';
-centerText.onclick = cycleShape;
-
-let phraseIndex = 0;
-setInterval(() => {
-  centerText.style.opacity = 0;
-  setTimeout(() => {
-    phraseIndex = (phraseIndex + 1) % centerPhrases.length;
-    centerText.textContent = centerPhrases[phraseIndex];
-    centerText.style.opacity = 0.8;
-  }, 1000);
-}, 5000);
-
 // --- intro cinematográfica ---
 const INTRO_DURATION = 4.5;
 let introTime = 0;
@@ -177,8 +179,9 @@ function animate() {
   const time = clock.elapsedTime;
 
   audioProcessor.update();
+  updateAutoMorph(dt);
 
-  // morph: aplica la forma pendiente cuando la galaxia ya se dispersó
+  // aplica la forma pendiente cuando la galaxia ya está reunida (morph≈0)
   if (pending && morphFactor < 0.06) {
     galaxy.setTarget(pending.positions);
     pending = null;
@@ -207,16 +210,6 @@ function animate() {
     camera.updateProjectionMatrix();
     controls.update();
   }
-
-  // texto central pulsante
-  const bass = audioProcessor.bass;
-  const mid = audioProcessor.mid;
-  const pulse = 1 + bass * 0.12 + Math.sin(time * 1.5) * 0.04;
-  centerText.style.transform = `translate(-50%, -50%) scale(${pulse})`;
-  // halo oscuro fuerte para legibilidad + un brillo de color muy sutil
-  centerText.style.textShadow =
-    `0 0 4px rgba(4,5,12,1), 0 0 10px rgba(4,5,12,0.98), 0 2px 12px rgba(4,5,12,0.92), ` +
-    `0 0 ${14 + bass * 10}px rgba(255,93,143,0.4)`;
 
   composer.render();
 }
