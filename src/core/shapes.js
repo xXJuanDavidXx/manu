@@ -62,7 +62,7 @@ export function infinityShape(count, scale = 5.2) {
 }
 
 // Nombre en 3D (nube de puntos a partir del texto).
-export function textShape(count, text, { scale = 11, font = 'bold 170px "Cinzel"' } = {}) {
+export function textShape(count, text, { scale = 11, font = 'bold 190px Georgia' } = {}) {
   return sampleCanvas(count, (ctx, w, h) => {
     ctx.fillStyle = '#fff';
     ctx.font = font;

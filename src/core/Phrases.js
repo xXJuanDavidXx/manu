@@ -10,25 +10,38 @@ const smoothstep = (a, b, x) => {
 };
 
 export class Phrases {
-  constructor(phrases) {
+  constructor(phrases, { texScale = 1 } = {}) {
     this.group = new THREE.Group();
+    const W = Math.round(1024 * texScale);
+    const H = Math.round(256 * texScale);
+    const cx = W / 2;
+    const cy = H / 2;
 
     phrases.forEach((text, i) => {
       const canvas = document.createElement('canvas');
-      canvas.width = 1024;
-      canvas.height = 256;
+      canvas.width = W;
+      canvas.height = H;
       const ctx = canvas.getContext('2d');
       const isSpecial = text.includes('pequeña') || text.toLowerCase().includes('hécate');
-      ctx.font = isSpecial ? '600 44px "Cinzel"' : 'italic 500 40px "Cormorant Garamond"';
-      ctx.fillStyle = '#ffffff';
+      ctx.font = `${isSpecial ? 'Bold ' : ''}${Math.round((isSpecial ? 42 : 32) * texScale)}px Arial`;
       ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(138, 43, 226, 1)';
-      ctx.shadowBlur = 12;
-      ctx.fillText(text, 512, 128);
+      ctx.textBaseline = 'middle';
+      // contorno oscuro para legibilidad sobre zonas brillantes
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 7 * texScale;
+      ctx.strokeStyle = 'rgba(4, 5, 12, 0.9)';
+      ctx.strokeText(text, cx, cy);
+      ctx.shadowColor = 'rgba(138, 43, 226, 0.9)';
+      ctx.shadowBlur = 8 * texScale;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(text, cx, cy);
 
       const texture = new THREE.CanvasTexture(canvas);
       texture.colorSpace = THREE.SRGBColorSpace;
-      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+      texture.generateMipmaps = false;        // menos VRAM y sin coste de generación
+      texture.minFilter = THREE.LinearFilter;
+      // mezcla normal (no aditiva): así el texto blanco no se lava sobre la galaxia
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false });
       const sprite = new THREE.Sprite(material);
 
       const angle = (i / phrases.length) * Math.PI * 2;

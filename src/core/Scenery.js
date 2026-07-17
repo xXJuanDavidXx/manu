@@ -55,7 +55,7 @@ function sigilTexture() {
 }
 
 export class Scenery {
-  constructor(scene, { starCount = 15000 } = {}) {
+  constructor(scene, { starCount = 15000, isMobile = false } = {}) {
     this.scene = scene;
 
     // --- campo de estrellas ---
@@ -79,7 +79,8 @@ export class Scenery {
     this.nebulaGroup = new THREE.Group();
     const nebTex = radialTexture('rgba(255,255,255,0.9)', 'rgba(255,255,255,0)');
     const nebColors = ['#5b2a86', '#1e3a8a', '#7a1f5c', '#241a52', '#0e4d6e'];
-    for (let i = 0; i < nebColors.length; i++) {
+    const nebCount = isMobile ? 3 : nebColors.length;
+    for (let i = 0; i < nebCount; i++) {
       const mat = new THREE.SpriteMaterial({
         map: nebTex, color: new THREE.Color(nebColors[i]), transparent: true,
         opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false,
@@ -106,7 +107,8 @@ export class Scenery {
     // --- estrellas fugaces (pool reutilizable) ---
     const comet = cometTexture();
     this.shooting = [];
-    for (let i = 0; i < 4; i++) {
+    const shootCount = isMobile ? 2 : 4;
+    for (let i = 0; i < shootCount; i++) {
       const spr = new THREE.Sprite(new THREE.SpriteMaterial({
         map: comet, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
       }));

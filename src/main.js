@@ -14,8 +14,9 @@ import { phrases, centerPhrases, playlist } from './data.js';
 
 // --- ajuste por dispositivo (optimización) ---
 const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
-const PARTICLE_COUNT = isMobile ? 35000 : 110000;
-const STAR_COUNT = isMobile ? 7000 : 16000;
+const PARTICLE_COUNT = isMobile ? 22000 : 110000;
+const STAR_COUNT = isMobile ? 4000 : 16000;
+const BLOOM_SCALE = isMobile ? 0.5 : 1; // el bloom se calcula a media resolución en móvil
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -28,7 +29,9 @@ const camera = new THREE.PerspectiveCamera(BASE_FOV, window.innerWidth / window.
 
 const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+// En móvil el canvas WebGL va a 1x (la UI en DOM sigue nítida): mitad de píxeles
+// que a 1.5x, gran ahorro de fillrate sin penalizar el texto.
+renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.NoToneMapping;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
@@ -46,25 +49,14 @@ controls.enabled = false; // durante la intro
 const galaxy = new Galaxy(PARTICLE_COUNT, { pixelRatio: renderer.getPixelRatio() });
 scene.add(galaxy.points);
 
-const scenery = new Scenery(scene, { starCount: STAR_COUNT });
+const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
 
-// Las frases y el nombre "MANUELA" se dibujan en canvas: esperamos a que las
-// fuentes (Cinzel / Cormorant) carguen para no rasterizarlas con la de defecto.
-let phraseCloud = null;
-let shapes = [];
-const fontsReady = document.fonts
-  ? Promise.all([
-      document.fonts.load('600 42px "Cinzel"'),
-      document.fonts.load('500 32px "Cormorant Garamond"'),
-      document.fonts.load('italic 500 32px "Cormorant Garamond"'),
-    ]).catch(() => {})
-  : Promise.resolve();
+// Frases (Arial) y nombre "MANUELA" (Georgia): fuentes del sistema, se dibujan ya.
+// En móvil las texturas van a la mitad (menos VRAM y menos coste de subida).
+const phraseCloud = new Phrases(phrases, { texScale: isMobile ? 0.5 : 1 });
+scene.add(phraseCloud.group);
 
-Promise.race([fontsReady, new Promise((r) => setTimeout(r, 3000))]).then(() => {
-  phraseCloud = new Phrases(phrases);
-  scene.add(phraseCloud.group);
-  shapes = buildShapes(PARTICLE_COUNT, 'MANUELA');
-});
+const shapes = buildShapes(PARTICLE_COUNT, 'MANUELA');
 
 const audio = document.getElementById('audio');
 const audioProcessor = new AudioProcessor(audio);
@@ -73,7 +65,7 @@ const audioProcessor = new AudioProcessor(audio);
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(
-  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  new THREE.Vector2(window.innerWidth * BLOOM_SCALE, window.innerHeight * BLOOM_SCALE),
   isMobile ? 0.32 : 0.42, // strength
   0.4,                    // radius
   0.5                     // threshold
@@ -88,7 +80,6 @@ let shapeIdx = -1;    // -1 = galaxia
 let pending = null;   // forma pendiente de aplicar tras dispersarse
 
 function cycleShape() {
-  if (!shapes.length) return;
   shapeIdx++;
   if (shapeIdx >= shapes.length) {
     shapeIdx = -1;
@@ -196,7 +187,7 @@ function animate() {
   morphFactor += (targetMorph - morphFactor) * 0.06;
 
   galaxy.update(time, audioProcessor, morphFactor);
-  if (phraseCloud) phraseCloud.update(time, audioProcessor, morphFactor);
+  phraseCloud.update(time, audioProcessor, morphFactor);
   scenery.update(dt, audioProcessor);
 
   // cámara
@@ -222,10 +213,10 @@ function animate() {
   const mid = audioProcessor.mid;
   const pulse = 1 + bass * 0.12 + Math.sin(time * 1.5) * 0.04;
   centerText.style.transform = `translate(-50%, -50%) scale(${pulse})`;
-  // halo oscuro para legibilidad + brillo suave reactivo (ember/selene)
+  // halo oscuro fuerte para legibilidad + un brillo de color muy sutil
   centerText.style.textShadow =
-    `0 0 3px rgba(4,5,12,0.98), 0 0 10px rgba(4,5,12,0.95), 0 2px 14px rgba(4,5,12,0.9), ` +
-    `0 0 ${12 + bass * 12}px rgba(255,93,143,0.55), 0 0 ${18 + mid * 16}px rgba(201,179,255,0.35)`;
+    `0 0 4px rgba(4,5,12,1), 0 0 10px rgba(4,5,12,0.98), 0 2px 12px rgba(4,5,12,0.92), ` +
+    `0 0 ${14 + bass * 10}px rgba(255,93,143,0.4)`;
 
   composer.render();
 }
@@ -235,7 +226,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
-  bloom.setSize(window.innerWidth, window.innerHeight);
+  bloom.setSize(window.innerWidth * BLOOM_SCALE, window.innerHeight * BLOOM_SCALE);
 });
 
 animate();

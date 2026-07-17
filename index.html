@@ -33,14 +33,15 @@
     .center-text {
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      font-family: 'Cinzel', serif; font-weight: 600;
-      font-size: clamp(1.3rem, 4.4vw, 2.3rem);
-      letter-spacing: 0.14em; text-align: center; line-height: 1.35;
+      display: inline-block; max-width: 88vw;
+      font-family: 'Segoe UI', system-ui, sans-serif; font-weight: 700;
+      font-size: clamp(1.3rem, 4.4vw, 2.1rem);
+      letter-spacing: 0.01em; text-align: center; line-height: 1.4;
       pointer-events: none; z-index: 50;
-      text-shadow: 0 0 3px rgba(4,5,12,0.98), 0 0 12px rgba(4,5,12,0.9), 0 0 26px var(--ember);
-      transition: opacity 1s; width: min(86%, 40rem);
-      padding: 0.55em 1em;
-      background: radial-gradient(ellipse at center, rgba(4,5,12,0.55) 0%, rgba(4,5,12,0.3) 42%, rgba(4,5,12,0) 72%);
+      padding: 0.55em 1.1em; border-radius: 24px;
+      text-shadow: 0 0 4px rgba(4,5,12,1), 0 0 12px rgba(4,5,12,0.96), 0 0 26px var(--ember);
+      background: radial-gradient(ellipse at center, rgba(4,5,12,0.74) 0%, rgba(4,5,12,0.48) 52%, rgba(4,5,12,0) 82%);
+      transition: opacity 1s;
     }
 
     /* registro astral (arriba dcha) */
@@ -122,6 +123,11 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, .center-text, .track-info, .moon-btn, .key-btn { transition: none !important; }
+    }
+    /* En táctil: sin backdrop-filter (re-difuminar el canvas cada frame es caro) */
+    @media (pointer: coarse) {
+      .console { backdrop-filter: none; background: rgba(8, 8, 16, 0.82); }
+      .track-info { backdrop-filter: none; background: rgba(8, 8, 16, 0.82); }
     }
     @media (max-width: 560px) {
       .hint { display: none; }
