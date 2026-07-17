@@ -47,10 +47,24 @@ const galaxy = new Galaxy(PARTICLE_COUNT, { pixelRatio: renderer.getPixelRatio()
 scene.add(galaxy.points);
 
 const scenery = new Scenery(scene, { starCount: STAR_COUNT });
-const phraseCloud = new Phrases(phrases);
-scene.add(phraseCloud.group);
 
-const shapes = buildShapes(PARTICLE_COUNT, 'MANUELA');
+// Las frases y el nombre "MANUELA" se dibujan en canvas: esperamos a que las
+// fuentes (Cinzel / Cormorant) carguen para no rasterizarlas con la de defecto.
+let phraseCloud = null;
+let shapes = [];
+const fontsReady = document.fonts
+  ? Promise.all([
+      document.fonts.load('600 42px "Cinzel"'),
+      document.fonts.load('500 32px "Cormorant Garamond"'),
+      document.fonts.load('italic 500 32px "Cormorant Garamond"'),
+    ]).catch(() => {})
+  : Promise.resolve();
+
+Promise.race([fontsReady, new Promise((r) => setTimeout(r, 3000))]).then(() => {
+  phraseCloud = new Phrases(phrases);
+  scene.add(phraseCloud.group);
+  shapes = buildShapes(PARTICLE_COUNT, 'MANUELA');
+});
 
 const audio = document.getElementById('audio');
 const audioProcessor = new AudioProcessor(audio);
@@ -60,9 +74,9 @@ const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  isMobile ? 0.65 : 0.85, // strength
-  0.55,                   // radius
-  0.2                     // threshold
+  isMobile ? 0.32 : 0.42, // strength
+  0.4,                    // radius
+  0.5                     // threshold
 );
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
@@ -74,6 +88,7 @@ let shapeIdx = -1;    // -1 = galaxia
 let pending = null;   // forma pendiente de aplicar tras dispersarse
 
 function cycleShape() {
+  if (!shapes.length) return;
   shapeIdx++;
   if (shapeIdx >= shapes.length) {
     shapeIdx = -1;
@@ -88,6 +103,12 @@ function cycleShape() {
 // --- reproductor ---
 let currentTrackIndex = 0;
 const playBtn = document.getElementById('playBtn');
+
+// El estado se muestra encendiendo la luna llena (no con texto: es un SVG).
+function setPlaying(isPlaying) {
+  document.body.classList.toggle('is-playing', isPlaying);
+  playBtn.setAttribute('aria-label', isPlaying ? 'Pausar' : 'Reproducir');
+}
 
 function updateTrackDisplay(name) {
   const display = document.getElementById('track-display');
@@ -104,7 +125,7 @@ function playTrack(index) {
   const track = playlist[currentTrackIndex];
   audio.src = track.src;
   audio.play();
-  playBtn.textContent = '⏸ Pausar';
+  setPlaying(true);
   updateTrackDisplay(track.name);
   if (track.colors) galaxy.setColors(track.colors.in, track.colors.out);
 }
@@ -115,11 +136,11 @@ playBtn.onclick = () => {
   if (audio.paused) {
     if (!audio.src) { playTrack(currentTrackIndex); return; }
     audio.play();
-    playBtn.textContent = '⏸ Pausar';
+    setPlaying(true);
     updateTrackDisplay(playlist[currentTrackIndex].name);
   } else {
     audio.pause();
-    playBtn.textContent = '▶ Iniciar';
+    setPlaying(false);
   }
 };
 document.getElementById('nextBtn').onclick = () => playTrack(currentTrackIndex + 1);
@@ -175,7 +196,7 @@ function animate() {
   morphFactor += (targetMorph - morphFactor) * 0.06;
 
   galaxy.update(time, audioProcessor, morphFactor);
-  phraseCloud.update(time, audioProcessor, morphFactor);
+  if (phraseCloud) phraseCloud.update(time, audioProcessor, morphFactor);
   scenery.update(dt, audioProcessor);
 
   // cámara
@@ -201,7 +222,10 @@ function animate() {
   const mid = audioProcessor.mid;
   const pulse = 1 + bass * 0.12 + Math.sin(time * 1.5) * 0.04;
   centerText.style.transform = `translate(-50%, -50%) scale(${pulse})`;
-  centerText.style.textShadow = `0 0 ${8 + bass * 15}px #ff69b4, 0 0 ${15 + mid * 25}px #ff1493`;
+  // halo oscuro para legibilidad + brillo suave reactivo (ember/selene)
+  centerText.style.textShadow =
+    `0 0 3px rgba(4,5,12,0.98), 0 0 10px rgba(4,5,12,0.95), 0 2px 14px rgba(4,5,12,0.9), ` +
+    `0 0 ${12 + bass * 12}px rgba(255,93,143,0.55), 0 0 ${18 + mid * 16}px rgba(201,179,255,0.35)`;
 
   composer.render();
 }

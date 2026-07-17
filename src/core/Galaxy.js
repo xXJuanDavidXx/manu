@@ -38,7 +38,7 @@ const vertexShader = /* glsl */ `
     float size = uSize * aScale * (1.0 + uBass * 1.2 + uBeat * 0.4);
     gl_PointSize = size * uPixelRatio * (300.0 / -mv.z);
 
-    vColor = mix(uColorIn, uColorOut, aRadius) + uTreble * 0.15;
+    vColor = mix(uColorIn, uColorOut, aRadius) + uTreble * 0.08;
   }
 `;
 

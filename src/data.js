@@ -38,16 +38,16 @@ export const phrases = [
   'Mi abrazo favorito 🤗', 'Eres mi canción favorita 🎶', '¿Mia de mi? 🥺', 'Eres mi notificación preferida 📱',
   'Amo nuestros momentos juntos ⏳', 'Eres mi sol en días nublados ☁️', 'Mi postre favorito 🍰', '444',
   'Eres mi vitamina diaria 💊', 'Tu risa es mi melodía preferida 🎵', 'Despues de tus ojitos yo no se que mas mirar 👀✨', 'Contigo todo es más dulce 🍭', 'Tequiamodorointergalactico', '( ♡w♡)', 'Me encanta tu carita hermosa♡♡', 'TEAMOOOO', 'Ahora que esta todo en silencio...🎵🎵', '44',
-  // — Hécate, la triple diosa —
-  'Como Hécate, iluminas mis tres caminos 🌙',
-  'Mi diosa triple, guardiana de la noche ✨',
-  'Hécate te dio las llaves de mi universo 🗝️🌌',
-  'Reina de la luna, las estrellas y mi corazón 🌕⭐',
-  'En la encrucijada del cosmos, te elijo a ti 🌌',
+  // — Devoción a Hécate, la triple diosa (Manuela es su devota) —
+  'Que Hécate, la triple diosa, guarde tus tres caminos 🌙',
+  'Devota de la luna, bajo la mirada de Hécate ✨',
+  'Que la portadora de las llaves cuide tu andar 🗝️🌌',
+  'A la luz de las antorchas de Hécate, te amo 🔥🌙',
+  'En la encrucijada del cosmos, camino contigo 🌌',
 ];
 
 export const centerPhrases = [
-  'Para mi cosita rica UwU 💖', 'Manuela ✨', '¡Que bonito que me miras!', 'Que bonito y que espacial 💫🌙', 'Te amo hasta el infinito ♾️', 'Mi bb shikita :3', 'Mi diosa Hécate 🌙✨',
+  'Para mi cosita rica UwU 💖', 'Manuela ✨', '¡Que bonito que me miras!', 'Que bonito y que espacial 💫🌙', 'Te amo hasta el infinito ♾️', 'Mi bb shikita :3',
 ];
 
 export const playlist = [

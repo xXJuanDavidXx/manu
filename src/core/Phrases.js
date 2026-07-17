@@ -19,7 +19,7 @@ export class Phrases {
       canvas.height = 256;
       const ctx = canvas.getContext('2d');
       const isSpecial = text.includes('pequeña') || text.toLowerCase().includes('hécate');
-      ctx.font = isSpecial ? 'Bold 42px Arial' : '32px Arial';
+      ctx.font = isSpecial ? '600 44px "Cinzel"' : 'italic 500 40px "Cormorant Garamond"';
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
       ctx.shadowColor = 'rgba(138, 43, 226, 1)';

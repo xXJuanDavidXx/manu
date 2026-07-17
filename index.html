@@ -4,51 +4,129 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>La Galaxia de Manuela ✨</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
   <style>
-    body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+    :root {
+      --void: #04050c;
+      --moon: #ece8f5;
+      --selene: #c9b3ff;
+      --ember: #ff5d8f;
+      --torch: #f6a15a;
+      --hair: rgba(201, 179, 255, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--void); overflow: hidden; color: var(--moon); font-family: 'Cormorant Garamond', Georgia, serif; }
     #canvas-container { position: fixed; inset: 0; }
 
     /* viñeta cinematográfica */
     #vignette {
       position: fixed; inset: 0; pointer-events: none; z-index: 40;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%);
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(2,2,8,0.62) 100%);
     }
 
+    /* texto central — inscripción */
     .center-text {
       position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      color: white; font-size: 1.8rem; font-weight: bold; text-align: center;
-      pointer-events: none; text-shadow: 0 0 15px #ff69b4, 0 0 30px #ff1493;
-      z-index: 50; transition: opacity 1s; width: 85%;
+      font-family: 'Cinzel', serif; font-weight: 600;
+      font-size: clamp(1.3rem, 4.4vw, 2.3rem);
+      letter-spacing: 0.14em; text-align: center; line-height: 1.35;
+      pointer-events: none; z-index: 50;
+      text-shadow: 0 0 3px rgba(4,5,12,0.98), 0 0 12px rgba(4,5,12,0.9), 0 0 26px var(--ember);
+      transition: opacity 1s; width: min(86%, 40rem);
+      padding: 0.55em 1em;
+      background: radial-gradient(ellipse at center, rgba(4,5,12,0.55) 0%, rgba(4,5,12,0.3) 42%, rgba(4,5,12,0) 72%);
     }
 
-    .hud {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(10, 10, 20, 0.7); backdrop-filter: blur(10px);
-      padding: 12px 20px; border-radius: 50px; border: 1px solid rgba(255,105,180,0.3);
-      display: flex; gap: 12px; align-items: center; color: white; z-index: 100;
-      box-shadow: 0 0 20px rgba(255, 105, 180, 0.2);
-    }
+    /* registro astral (arriba dcha) */
     .track-info {
-      position: fixed; top: 20px; right: 20px;
-      background: rgba(10, 10, 20, 0.6); backdrop-filter: blur(5px);
-      padding: 10px 15px; border-radius: 15px; border: 1px solid rgba(255,105,180,0.2);
-      color: white; font-size: 0.9rem; text-align: right; pointer-events: none;
-      z-index: 100; transition: opacity 0.5s;
+      position: fixed; top: 22px; right: 22px; z-index: 100;
+      padding: 12px 18px; text-align: right; pointer-events: none;
+      background: linear-gradient(180deg, rgba(9,9,18,0.55), rgba(9,9,18,0.35));
+      border: 1px solid var(--hair); border-radius: 2px;
+      backdrop-filter: blur(6px); transition: opacity 0.6s;
     }
+    .track-info .eyebrow {
+      font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.34em; color: var(--selene); text-transform: uppercase;
+    }
+    #track-name {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 1.15rem; margin-top: 3px; color: var(--moon);
+    }
+
+    /* indicación (arriba izq) */
     .hint {
-      position: fixed; top: 20px; left: 20px; color: rgba(255,255,255,0.55);
-      font-size: 0.8rem; z-index: 100; pointer-events: none; max-width: 200px;
-      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+      position: fixed; top: 24px; left: 24px; z-index: 100;
+      max-width: 15rem; pointer-events: none;
+      font-family: 'Cinzel', serif; font-size: 0.66rem; font-weight: 500;
+      letter-spacing: 0.16em; line-height: 1.7; text-transform: uppercase;
+      color: rgba(236, 232, 245, 0.5);
     }
-    .playlist-controls { display: flex; gap: 8px; align-items: center; }
-    button {
-      background: #ff69b4; border: none; padding: 8px 16px; border-radius: 20px;
-      color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
-      display: flex; align-items: center; justify-content: center;
+    .hint b { color: var(--selene); font-weight: 600; }
+
+    /* consola — el panel del observatorio */
+    .console {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+      z-index: 100; display: flex; align-items: center; gap: 22px;
+      padding: 12px 26px;
+      background: radial-gradient(120% 180% at 50% 0%, rgba(201,179,255,0.10), rgba(6,6,14,0.62) 70%);
+      border: 1px solid var(--hair); border-radius: 3px;
+      backdrop-filter: blur(9px);
+      box-shadow: 0 0 40px rgba(201,179,255,0.12), inset 0 1px 0 rgba(201,179,255,0.14);
     }
-    button:hover { background: #ff1493; transform: scale(1.05); }
+    .transport { display: flex; align-items: center; gap: 20px; }
+
+    /* botones — luna menguante · llena · creciente */
+    .moon-btn {
+      background: none; border: none; padding: 0; cursor: pointer;
+      color: var(--selene); line-height: 0;
+      transition: color 0.35s ease, transform 0.35s ease, filter 0.35s ease;
+    }
+    .moon-btn svg { display: block; }
+    .moon-btn.side { width: 30px; height: 30px; opacity: 0.75; }
+    .moon-btn.full { width: 46px; height: 46px; }
+    .moon-btn:hover, .moon-btn:focus-visible {
+      color: var(--moon); transform: scale(1.08);
+      filter: drop-shadow(0 0 10px rgba(201,179,255,0.8));
+      opacity: 1; outline: none;
+    }
+    .moon-btn:focus-visible { outline: 1px solid var(--selene); outline-offset: 6px; border-radius: 50%; }
+
+    /* luna llena encendida al reproducir (antorcha) */
+    body.is-playing .moon-btn.full {
+      color: var(--torch);
+      filter: drop-shadow(0 0 14px rgba(246,161,90,0.75));
+    }
+
+    .divider { width: 1px; height: 26px; background: var(--hair); }
+
+    /* llave de Hécate — añadir música */
+    .key-btn {
+      background: none; border: none; padding: 4px; cursor: pointer;
+      color: var(--selene); line-height: 0; opacity: 0.7;
+      transition: color 0.35s ease, transform 0.35s ease, filter 0.35s ease, opacity 0.35s ease;
+    }
+    .key-btn:hover, .key-btn:focus-visible {
+      color: var(--torch); opacity: 1; transform: scale(1.08) rotate(-8deg);
+      filter: drop-shadow(0 0 9px rgba(246,161,90,0.7)); outline: none;
+    }
+    .key-btn:focus-visible { outline: 1px solid var(--selene); outline-offset: 5px; }
+
     input[type=file] { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .center-text, .track-info, .moon-btn, .key-btn { transition: none !important; }
+    }
+    @media (max-width: 560px) {
+      .hint { display: none; }
+      .console { gap: 16px; padding: 10px 18px; }
+    }
   </style>
 
   <script type="importmap">
@@ -67,20 +145,47 @@
 
 <div id="dynamic-center-text" class="center-text">Es tu universo</div>
 
-<div class="hint">✨ Toca el texto del centro para cambiar de forma 🌙</div>
+<p class="hint">Toca la <b>luna llena</b> para comenzar · toca el <b>centro</b> para transfigurar el cosmos</p>
 
 <div id="track-display" class="track-info" style="opacity: 0;">
-  <div style="font-size: 0.7rem; color: #ff69b4;">REPRODUCIENDO</div>
+  <div class="eyebrow">Suena ahora</div>
   <div id="track-name">Donde Nadie Pueda Ir</div>
 </div>
 
-<div class="hud">
-  <div class="playlist-controls">
-    <button id="prevBtn">⏮</button>
-    <button id="playBtn">▶ Iniciar</button>
-    <button id="nextBtn">⏭</button>
+<div class="console">
+  <div class="transport">
+    <button id="prevBtn" class="moon-btn side" aria-label="Canción anterior">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <defs><mask id="waning"><circle cx="20" cy="20" r="15" fill="#fff"/><circle cx="29" cy="20" r="13.5" fill="#000"/></mask></defs>
+        <circle cx="20" cy="20" r="15" fill="currentColor" mask="url(#waning)"/>
+      </svg>
+    </button>
+
+    <button id="playBtn" class="moon-btn full" aria-label="Reproducir">
+      <svg viewBox="0 0 46 46" aria-hidden="true">
+        <circle cx="23" cy="23" r="17" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <button id="nextBtn" class="moon-btn side" aria-label="Siguiente canción">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <defs><mask id="waxing"><circle cx="20" cy="20" r="15" fill="#fff"/><circle cx="11" cy="20" r="13.5" fill="#000"/></mask></defs>
+        <circle cx="20" cy="20" r="15" fill="currentColor" mask="url(#waxing)"/>
+      </svg>
+    </button>
   </div>
-  <button id="pickBtn">🎵</button> <input type="file" id="pickFile" accept="audio/*">
+
+  <div class="divider"></div>
+
+  <button id="pickBtn" class="key-btn" aria-label="Añadir tu propia música">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="4.2"/>
+      <path d="M11 11 L20 20"/>
+      <path d="M16.5 16.5 L19 14"/>
+      <path d="M19 19 L21.5 16.5"/>
+    </svg>
+  </button>
+  <input type="file" id="pickFile" accept="audio/*">
   <audio id="audio"><source src="Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
 </div>
 
