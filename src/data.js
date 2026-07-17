@@ -1,0 +1,67 @@
+// Contenido de la galaxia: frases orbitando, frases del centro y playlist.
+// Las frases personales se preservan tal cual; al final se añaden las de Hécate.
+
+export const phrases = [
+  'la mamá de mis hijos ❤️', 'Soncitomon', 'Poncitoson', 'Pondequeso', 'La chiquita más linda 🐣', 'Tan pequeña y tan hermosa ✨', 'Elamordemivida:33',
+  'Mi lugar favorito es contigo', 'Te Amodoro 💖', 'Te Pomodoro', '7w7 me encata agarrarte del cuello', 'Amo Agarrarte el rabo🍑',
+  'Pequeñita, pero eres mi mundo entero 🌎', 'Eres perfecta para mi💖', 'Tus ojos son grandes, bonitos y profundos 🥺',
+  'Mi gran amor 💖', 'Me encanta tu cuerpo ❤️‍🔥', 'Toda shikita y ya no cabes en mis pensamientos 💭',
+  'Lo más grande de mi vida eres tu mi shikita ✨', 'Gracias al todo porque llegaste a mi vida ✨', 'Un tesoro pequeño para cuidar por siempre 💎', 'Gracias por ser un apoyo en mi vida', 'Quedate mas, no te lleves mi felicidad',
+  'Eres mi punto favorito en el mapa 📍', 'Tan chiquita y me llenas el alma 🌟', 'Mi pequeña dosis de felicidad 💊',
+  'Tu sonrisa es mi motor 😊', 'Esa carita tan linda. 🫠', 'Tus ojos brillan más que estas estrellas ✨',
+  'Ojitos que me enamoran 😍', 'Tus ojotes hermosos me vuelven loco 👁️❤️',
+  'Esa mirada profunda en la que amo perderme ✨', 'Tan linda que no es real 💭', 'Eres arte 🎨',
+  'Esa mirada que me desarma 👀', 'Perfección en cada curva ✨',
+  'Me encata hacerte el amor 7w7', 'gemi2 de angelito 🔥',
+  'Eres mi pasión más intensa y mi amor eterno ❤️‍🔥',
+  'Me encanta perderme in tu cuerpo 💋', 'Eres la Jinchūriki de esta bestia🍆', 'Tuyo siempre 🥺', 'Culote en constante expancion 🍑',
+  'Nuestra química es de otro planeta 🌌🔥', 'Hacemos el delicioso? 7w7', 'Me lo comes tan rico 🫠 que muero', 'Eres mi comida favorita',
+  'Eres el amor de mi vida y mi deseo más grande 🌹', 'Jimeno extraña a Jimena UnU', 'Me encanta hacerte mia ❤️‍🔥❤️‍🔥',
+  'Eres mi obra maestra favorita 🖼️', 'Tu carita es mi paisaje preferido 🌄', 'Tus labios, mi perdición 💋',
+  'Mi amor ❤️', 'Mi cielo 🌌', 'Eres mi todo ✨', 'Mi vida 💖', 'Te quiero infinito ♾️', 'proyecto familia :3',
+  'Mi tesoro 💎', 'Siempre tú', 'Anhelo tu sonrisa 😊', 'Moriria por ti', 'Anhelo tu cuerpo *-*', 'Gracias por estar 🙏', 'Gracias por quererme ♡', 'Tego unas ganas increibles de hacerte mia una y otra vez 😏', 'Te necesito, mi ser te llama❤️‍🔥',
+  'Me haces el más feliz 💖', 'Contigo el mundo es mejor 🌎', 'Mi lugar favorito es contigo 🏠',
+  'Mi razón de sonreír 😊', 'Mi calma en el caos 🌊', 'Mi lugar seguro 🫶', 'Eres mi paz 🕊️',
+  'Eres un sueño hecho realidad 🌙', 'Eres perfecta para mí 💘', 'Mi felicidad eres tú 😄', '(ɔ◔‿◔)ɔ ♥',
+  'Mi corazón te eligió 💓', 'Eres lo más bonito que tengo 🌷', 'Inseparables hoy y siempre 💞',
+  'Mi hogar son tus brazos 🏠', 'Elegirte fue mi mejor acierto ✅', 'Te amo más de lo que las palabras dicen 🗣️',
+  'Eres mi "por siempre" ♾️', 'Mi vida es más linda si estás tú 🌸', 'Eres mi debilidad favorita 🫠',
+  'Cada segundo contigo es un regalo 🎁', 'Eres mi pensamiento constante 💭',
+  'Orbitando en tu amor 🪐', 'Mi universo eres tú 🌌', 'Luz de mi vida 🕯️',
+  'Más allá del infinito 🚀', 'Un millón de galaxias y te elijo a ti ✨', 'Nuestra propia galaxia 💫',
+  'Mi estrella favorita ⭐', 'Eres magia pura ✨', 'Mi pedacito de cielo ☁️',
+  'Eres mi destino 💫', 'Mi sueño más lindo 🌙', 'Tú haces que mi mundo gire 🌀',
+  'Nuestra conexión es universal 🌌✨', 'Brillas más que el sol ☀️', 'Mi eclipse favorito 🌑',
+  'Eres el centro de mi universo 🌌', 'Un viaje a las estrellas a tu lado 🚀', 'Nuestra historia está escrita en el cielo ✍️',
+  'Tacita de cafe con leche ☕️', 'Guapa 😍', 'Reinita 👑', 'Dulzura infinita 🍯',
+  'Mi alegría diaria ☀️', 'Mi todo bonito 💖', 'Mi casualidad favorita 🍀',
+  'Mi abrazo favorito 🤗', 'Eres mi canción favorita 🎶', '¿Mia de mi? 🥺', 'Eres mi notificación preferida 📱',
+  'Amo nuestros momentos juntos ⏳', 'Eres mi sol en días nublados ☁️', 'Mi postre favorito 🍰', '444',
+  'Eres mi vitamina diaria 💊', 'Tu risa es mi melodía preferida 🎵', 'Despues de tus ojitos yo no se que mas mirar 👀✨', 'Contigo todo es más dulce 🍭', 'Tequiamodorointergalactico', '( ♡w♡)', 'Me encanta tu carita hermosa♡♡', 'TEAMOOOO', 'Ahora que esta todo en silencio...🎵🎵', '44',
+  // — Hécate, la triple diosa —
+  'Como Hécate, iluminas mis tres caminos 🌙',
+  'Mi diosa triple, guardiana de la noche ✨',
+  'Hécate te dio las llaves de mi universo 🗝️🌌',
+  'Reina de la luna, las estrellas y mi corazón 🌕⭐',
+  'En la encrucijada del cosmos, te elijo a ti 🌌',
+];
+
+export const centerPhrases = [
+  'Para mi cosita rica UwU 💖', 'Manuela ✨', '¡Que bonito que me miras!', 'Que bonito y que espacial 💫🌙', 'Te amo hasta el infinito ♾️', 'Mi bb shikita :3', 'Mi diosa Hécate 🌙✨',
+];
+
+export const playlist = [
+  { name: 'Donde Nadie Pueda Ir', src: 'Donde Nadie Pueda Ir.mp3', colors: { in: '#00ffff', out: '#6a0dad' } },
+  { name: 'Put Your Head On My Shoulder', src: 'Paul Anka — Put Your Head On My Shoulder [Letra + video].mp3', colors: { in: '#ff1493', out: '#00bfff' } },
+  { name: 'La Casa Verde', src: 'La Casa Verde.mp3', colors: { in: '#00ff88', out: '#ff00ff' } },
+  { name: 'Canserbero - Querer Querernos', src: 'Canserbero - Querer Querernos (Versión Acústica).mp3', colors: { in: '#ff4500', out: '#240046' } },
+  { name: "I Don't Want to Set the World on Fire", src: "I Don't Want to Set the World on Fire.mp3", colors: { in: '#ff8c00', out: '#008080' } },
+  { name: 'Kharmasutra', src: 'Kharmasutra.mp3', colors: { in: '#bf00ff', out: '#10002b' } },
+  { name: 'Mägo De Oz - Pensando en ti', src: 'Mägo De Oz - Pensando en ti __ Letra.mp3', colors: { in: '#ffd700', out: '#ff00ff' } },
+  { name: 'Mon Laferte - La Nave del Olvido', src: 'Mon Laferte - La Nave del Olvido _ Homenaje a José José, Vive Latino 2020.mp3', colors: { in: '#e01e37', out: '#3a0ca3' } },
+  { name: 'Serenauta - Edson Velandia', src: 'Serenauta- Edson Velandia.mp3', colors: { in: '#ccff00', out: '#ff007f' } },
+  { name: 'Shine On You Crazy Diamond', src: 'Shine On You Crazy Diamond (Pts. 1-5).mp3', colors: { in: '#4cc9f0', out: '#4361ee' } },
+  { name: 'Fly Me To The Moon', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3', colors: { in: '#ffbe0b', out: '#023e8a' } },
+  { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3", colors: { in: '#fb5607', out: '#3a86ff' } },
+  { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3', colors: { in: '#ff006e', out: '#8338ec' } },
+];
