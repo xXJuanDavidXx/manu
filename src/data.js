@@ -64,4 +64,11 @@ export const playlist = [
   { name: 'Fly Me To The Moon', src: 'Frank Sinatra - Fly Me To The Moon (Audio) ft. Count Basie And His Orchestra.mp3', colors: { in: '#ffbe0b', out: '#023e8a' } },
   { name: "What You Won't Do for Love", src: "What You Won't Do for Love.mp3", colors: { in: '#fb5607', out: '#3a86ff' } },
   { name: 'MAS QUE AMIGOS - BLESSD', src: 'MAS QUE AMIGOS _ BLESSD ❌ HADES 66 ❌ BLACKINNY ❌ YOUNG FATTY.mp3', colors: { in: '#ff006e', out: '#8338ec' } },
+  // — nuevas —
+  { name: 'Dann Jhonny - 2006', src: 'Dann Jhonny - 2006 (Catalina la Grande Freestyle).mp3', colors: { in: '#ff9e00', out: '#3a0ca3' } },
+  { name: 'Paulo Londra - Adán y Eva', src: 'Paulo Londra - Adan y Eva (Official Video).mp3', colors: { in: '#38b000', out: '#d00000' } },
+  { name: 'Paulo Londra - Nena Maldición', src: 'Paulo Londra ft Lenny Tavarez - Nena Maldicion (Official Video).mp3', colors: { in: '#c1121f', out: '#10002b' } },
+  { name: 'Samantha Barrón - Dibújame', src: 'Samantha Barrón - Dibújame Feat. Nanpa Básico (Video Oficial).mp3', colors: { in: '#ffafcc', out: '#4361ee' } },
+  { name: 'Blessd - Trinidad Bendita', src: 'URUS BLUE      BLESSD ( TRINIDAD BENDITA ).mp3', colors: { in: '#00b4d8', out: '#ffd60a' } },
+  { name: 'Vilma Palma e Vampiros - Auto Rojo', src: 'Vilma Palma E Vampiros - Auto Rojo [Video Oficial].mp3', colors: { in: '#e63946', out: '#1d3557' } },
 ];
