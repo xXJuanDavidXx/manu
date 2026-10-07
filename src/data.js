@@ -26,7 +26,7 @@ export const playlist = [
 
 // Planetas que orbitan la galaxia. Los que tienen `game` se pueden visitar;
 // los demás "duermen" hasta que se les construya su juego.
-//   orbit: radio de la órbita · speed: rad/s · phase: ángulo inicial · tilt: inclinación
+//   orbit: radio de la órbita · speed: rad/s · phase: ángulo inicial · tilt: inclinación (radianes)
 export const planets = [
   {
     key: 'ritmo', name: 'Planeta Ritmo', subtitle: 'Atrapa los corazones al ritmo de nuestra música',

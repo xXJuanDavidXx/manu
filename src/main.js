@@ -62,7 +62,7 @@ const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
 const labelLayer = document.getElementById('planet-labels');
 const planets = planetDefs.map((def) => {
   const p = new Planet(def, labelLayer);
-  scene.add(p.group);
+  scene.add(p.group, p.orbitLine);
   return p;
 });
 const planetHitAreas = planets.map((p) => p.hitArea);

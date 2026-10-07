@@ -120,17 +120,35 @@ export class Planet {
     labelLayer.append(this.label);
     this._nudgeTimer = 0;
 
+    // camino de la órbita: un anillo tenue que el planeta recorre exactamente
+    const SEG = 160;
+    const pts = new Float32Array(SEG * 3);
+    for (let i = 0; i < SEG; i++) this.orbitPoint((i / SEG) * Math.PI * 2, pts, i * 3);
+    const orbitGeo = new THREE.BufferGeometry();
+    orbitGeo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    this.orbitLine = new THREE.LineLoop(orbitGeo, new THREE.LineBasicMaterial({
+      color: new THREE.Color(this.awake ? a : '#ece8f5'), transparent: true,
+      opacity: this.awake ? 0.22 : 0.08, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+
     this.update(0, 0, null);
+  }
+
+  // Punto de la órbita en el ángulo `angle`: un círculo inclinado `tilt`
+  // radianes (la altura sigue a z, así el camino se cierra sobre sí mismo).
+  orbitPoint(angle, out, o = 0) {
+    const d = this.def;
+    const z = Math.sin(angle) * d.orbit;
+    out[o] = Math.cos(angle) * d.orbit;
+    out[o + 1] = Math.sin(d.tilt) * z;
+    out[o + 2] = Math.cos(d.tilt) * z;
+    return out;
   }
 
   update(time, dt, audio) {
     const d = this.def;
-    const angle = d.phase + time * d.speed;
-    this.group.position.set(
-      Math.cos(angle) * d.orbit,
-      Math.sin(angle * 0.7) * d.orbit * d.tilt,
-      Math.sin(angle) * d.orbit,
-    );
+    const p = this.orbitPoint(d.phase + time * d.speed, this._orbitTmp ??= [0, 0, 0]);
+    this.group.position.set(p[0], p[1], p[2]);
     this.body.rotation.y = time * 0.15;
     this.group.getWorldPosition(this.worldPos);
 
@@ -161,7 +179,9 @@ export class Planet {
     tmp.y += this.def.radius * 1.9;
     tmp.project(camera);
     if (tmp.z > 1) { this.label.style.opacity = 0; return; }
-    const x = (tmp.x * 0.5 + 0.5) * width;
+    // que el nombre no se salga por los bordes de la pantalla
+    const half = (this._labelHalf ||= this.label.offsetWidth / 2) + 8;
+    const x = Math.min(width - half, Math.max(half, (tmp.x * 0.5 + 0.5) * width));
     const y = (-tmp.y * 0.5 + 0.5) * height;
     this.label.style.opacity = '';
     this.label.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
