@@ -1,0 +1,169 @@
+import * as THREE from 'three';
+import { radialTexture } from '../core/textures.js';
+
+// Un planeta que orbita la galaxia. La superficie es un shader procedural
+// (bandas + ruido, sin texturas externas); los planetas "dormidos" se ven
+// apagados, en gris. Cada planeta tiene una etiqueta en DOM que lo sigue en
+// pantalla y una esfera invisible más grande para que sea fácil tocarlo.
+
+const vertexShader = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vPos;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vPos = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = /* glsl */ `
+  uniform vec3 uA;
+  uniform vec3 uB;
+  uniform float uTime;
+  uniform float uPulse;
+  uniform float uDormant;
+  varying vec3 vNormal;
+  varying vec3 vPos;
+
+  float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+  float noise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(mix(hash(i), hash(i + vec3(1, 0, 0)), f.x), mix(hash(i + vec3(0, 1, 0)), hash(i + vec3(1, 1, 0)), f.x), f.y),
+      mix(mix(hash(i + vec3(0, 0, 1)), hash(i + vec3(1, 0, 1)), f.x), mix(hash(i + vec3(0, 1, 1)), hash(i + vec3(1, 1, 1)), f.x), f.y),
+      f.z);
+  }
+
+  void main() {
+    vec3 p = normalize(vPos);
+    float n = noise(p * 3.0 + vec3(0.0, uTime * 0.06, 0.0)) * 0.6 + noise(p * 8.0) * 0.4;
+    float bands = sin(p.y * 9.0 + n * 4.0) * 0.5 + 0.5;
+    vec3 col = mix(uB, uA, bands) * (0.45 + 0.55 * n);
+
+    // luz suave desde arriba-izquierda y borde luminoso (atmósfera)
+    float light = clamp(dot(vNormal, normalize(vec3(-0.4, 0.6, 0.7))), 0.0, 1.0);
+    col *= 0.35 + 0.75 * light;
+    float rim = pow(1.0 - max(dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0), 2.4);
+    col += uA * rim * (0.9 + uPulse * 0.8);
+
+    float grey = dot(col, vec3(0.3, 0.59, 0.11));
+    col = mix(col, vec3(grey) * 0.45, uDormant);
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+
+let haloTex = null;
+
+export class Planet {
+  constructor(def, labelLayer) {
+    this.def = def;
+    this.awake = Boolean(def.game);
+    this.group = new THREE.Group();
+    this.worldPos = new THREE.Vector3();
+
+    const [a, b] = def.colors;
+    this.material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        uA: { value: new THREE.Color(a) },
+        uB: { value: new THREE.Color(b) },
+        uTime: { value: 0 },
+        uPulse: { value: 0 },
+        uDormant: { value: this.awake ? 0 : 0.75 },
+      },
+    });
+    this.body = new THREE.Mesh(new THREE.SphereGeometry(def.radius, 48, 32), this.material);
+    this.group.add(this.body);
+
+    // halo (atmósfera brillante)
+    haloTex ??= radialTexture('rgba(255,255,255,0.85)', 'rgba(255,255,255,0)');
+    this.halo = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: haloTex, color: new THREE.Color(a), transparent: true,
+      opacity: this.awake ? 0.5 : 0.12, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    this.halo.scale.setScalar(def.radius * 4.2);
+    this.group.add(this.halo);
+
+    if (def.ring) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(def.radius * 1.45, def.radius * 2.1, 96),
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color(a), transparent: true, opacity: 0.35, side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending, depthWrite: false,
+        }),
+      );
+      ring.rotation.x = Math.PI / 2.4;
+      this.group.add(ring);
+    }
+
+    // zona de toque: invisible y generosa (en el celular el planeta se ve chico)
+    this.hitArea = new THREE.Mesh(
+      new THREE.SphereGeometry(def.radius * 2.4, 12, 8),
+      new THREE.MeshBasicMaterial({ visible: false }),
+    );
+    this.hitArea.userData.planet = this;
+    this.group.add(this.hitArea);
+
+    // etiqueta
+    this.label = document.createElement('div');
+    this.label.className = 'planet-label' + (this.awake ? '' : ' dormant');
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.textContent = def.name;
+    const sub = document.createElement('div');
+    sub.className = 'sub';
+    sub.textContent = this.awake ? 'Toca para viajar' : def.subtitle;
+    this.label.append(name, sub);
+    labelLayer.append(this.label);
+    this._nudgeTimer = 0;
+
+    this.update(0, 0, null);
+  }
+
+  update(time, dt, audio) {
+    const d = this.def;
+    const angle = d.phase + time * d.speed;
+    this.group.position.set(
+      Math.cos(angle) * d.orbit,
+      Math.sin(angle * 0.7) * d.orbit * d.tilt,
+      Math.sin(angle) * d.orbit,
+    );
+    this.body.rotation.y = time * 0.15;
+    this.group.getWorldPosition(this.worldPos);
+
+    const u = this.material.uniforms;
+    u.uTime.value = time;
+    const pulse = this.awake && audio ? audio.bass * 0.6 + audio.beatHold * 0.6 : 0;
+    u.uPulse.value = pulse;
+    this.halo.material.opacity = this.awake ? 0.45 + pulse * 0.35 : 0.12;
+
+    if (this._nudgeTimer > 0) {
+      this._nudgeTimer -= dt;
+      if (this._nudgeTimer <= 0) this.label.classList.remove('nudge');
+    }
+  }
+
+  // Muestra el subtítulo un momento (p. ej. al tocar un planeta dormido).
+  nudge() {
+    this.label.classList.add('nudge');
+    this._nudgeTimer = 2.6;
+  }
+
+  setHover(on) { this.label.classList.toggle('hover', on); }
+
+  // Coloca la etiqueta sobre el planeta en pantalla.
+  placeLabel(camera, width, height, visible, tmp) {
+    if (!visible) { this.label.style.opacity = 0; return; }
+    tmp.copy(this.worldPos);
+    tmp.y += this.def.radius * 1.9;
+    tmp.project(camera);
+    if (tmp.z > 1) { this.label.style.opacity = 0; return; }
+    const x = (tmp.x * 0.5 + 0.5) * width;
+    const y = (-tmp.y * 0.5 + 0.5) * height;
+    this.label.style.opacity = '';
+    this.label.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -100%)`;
+  }
+}

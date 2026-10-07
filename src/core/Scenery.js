@@ -1,24 +1,10 @@
 import * as THREE from 'three';
 import { drawHecateSigil } from './shapes.js';
+import { radialTexture } from './textures.js';
 
 // Ambiente espacial: campo de estrellas, nebulosas de color, estrellas fugaces
 // y el sigilo de Hécate flotando siempre de fondo. Todas las texturas se generan
 // en canvas (nada externo) y los objetos se reutilizan (sin allocs por frame).
-
-function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,0)') {
-  const s = 128;
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = s;
-  const ctx = canvas.getContext('2d');
-  const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-  g.addColorStop(0, inner);
-  g.addColorStop(1, outer);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, s, s);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
 
 function cometTexture() {
   const w = 256, h = 64;

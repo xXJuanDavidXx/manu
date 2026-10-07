@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>La Galaxia de Manuela ✨</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🌙%3C/text%3E%3C/svg%3E">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,6 +107,134 @@
 
     input[type=file] { display: none; }
 
+    /* consola en dos filas: progreso arriba, controles abajo */
+    .console { flex-direction: column; gap: 8px; padding-top: 10px; }
+    .console-row { display: flex; align-items: center; gap: 22px; }
+
+    /* hilo del tiempo — barra de progreso */
+    .progress { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 250px; }
+    .time {
+      font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.08em;
+      color: rgba(236, 232, 245, 0.55); font-variant-numeric: tabular-nums; min-width: 2.6em;
+    }
+    .time:last-child { text-align: right; }
+    .seek {
+      position: relative; flex: 1; height: 18px; cursor: pointer; touch-action: none;
+      display: flex; align-items: center; outline: none;
+    }
+    .seek .rail { position: relative; width: 100%; height: 2px; background: var(--hair); border-radius: 2px; }
+    .seek .fill {
+      position: absolute; inset: 0 auto 0 0; width: 0%;
+      background: linear-gradient(90deg, var(--selene), var(--torch)); border-radius: 2px;
+    }
+    .seek .knob {
+      position: absolute; top: 50%; left: 0%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px;
+      border-radius: 50%; background: var(--moon);
+      box-shadow: 0 0 8px rgba(246,161,90,0.8); transition: transform 0.2s;
+    }
+    .seek:hover .knob, .seek:focus-visible .knob, .seek.dragging .knob { transform: scale(1.4); }
+    .seek:focus-visible .rail { outline: 1px solid var(--selene); outline-offset: 5px; }
+
+    /* grimorio — lista de canciones */
+    .grimoire {
+      position: fixed; left: 50%; bottom: 128px; z-index: 110;
+      width: min(380px, calc(100vw - 32px)); max-height: min(52vh, 460px);
+      display: flex; flex-direction: column;
+      background: rgba(8, 8, 16, 0.9); border: 1px solid var(--hair); border-radius: 3px;
+      box-shadow: 0 0 40px rgba(201,179,255,0.14);
+      opacity: 0; pointer-events: none; transform: translate(-50%, 10px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .grimoire.open { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+    .grimoire .eyebrow {
+      font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.34em; color: var(--selene); text-transform: uppercase;
+      padding: 14px 18px 10px; border-bottom: 1px solid var(--hair);
+    }
+    .grimoire ol { list-style: none; margin: 0; padding: 6px 0; overflow-y: auto; overscroll-behavior: contain; }
+    .grimoire li button {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 9px 18px; background: none; border: none; cursor: pointer; text-align: left;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: rgba(236,232,245,0.82);
+      transition: background 0.25s, color 0.25s;
+    }
+    .grimoire li button:hover, .grimoire li button:focus-visible {
+      background: rgba(201,179,255,0.08); color: var(--moon); outline: none;
+    }
+    .grimoire .dot {
+      flex: none; width: 10px; height: 10px; border-radius: 50%;
+      box-shadow: 0 0 6px rgba(255,255,255,0.25);
+    }
+    .grimoire li.current button { color: var(--torch); font-style: italic; }
+    .grimoire li.current .dot { box-shadow: 0 0 10px var(--torch); }
+
+    /* etiquetas de los planetas (las posiciona main.js cada frame) */
+    #planet-labels { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
+    .planet-label {
+      position: absolute; left: 0; top: 0; text-align: center; white-space: nowrap;
+      opacity: 0.8; transition: opacity 0.4s;
+      text-shadow: 0 0 6px rgba(4,5,12,1), 0 0 14px rgba(4,5,12,0.9);
+    }
+    .planet-label .name {
+      font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.28em; text-transform: uppercase; color: var(--selene);
+    }
+    .planet-label .sub {
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem;
+      color: var(--moon); max-height: 0; opacity: 0; overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.4s ease;
+    }
+    .planet-label.dormant .name { color: rgba(236,232,245,0.42); }
+    .planet-label.hover .sub, .planet-label.nudge .sub { max-height: 1.6em; opacity: 1; }
+    .planet-label.hover .name { color: var(--torch); }
+    body:not([data-state="galaxy"]):not([data-state="flight"]) #planet-labels { display: none; }
+    body.hovering-planet canvas { cursor: pointer; }
+
+    /* escenario de los juegos y velo de transición */
+    #planet-stage { position: fixed; inset: 0; z-index: 60; display: none; }
+    body[data-state="planet"] #planet-stage { display: block; }
+    #veil { position: fixed; inset: 0; z-index: 90; background: var(--void); opacity: 0; pointer-events: none; }
+    body[data-state="planet"] .hint,
+    body[data-state="warp-in"] .hint,
+    body[data-state="warp-out"] .hint { opacity: 0; }
+    .hint { transition: opacity 0.5s; }
+
+    /* vuelo libre: joystick, impulso y aviso para descender */
+    #joystick {
+      position: fixed; z-index: 95; width: 112px; height: 112px; margin: -56px 0 0 -56px;
+      border: 1px solid var(--hair); border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(201,179,255,0.08), rgba(201,179,255,0) 70%);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    #joystick.on { opacity: 1; }
+    #joystick .knob {
+      position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px;
+      border-radius: 50%; background: radial-gradient(circle, #fff4dc, var(--torch) 60%, rgba(246,161,90,0) 72%);
+    }
+    .flight-ui { display: none; }
+    body[data-state="flight"] .flight-ui { display: flex; }
+    #boostBtn {
+      position: fixed; right: 22px; bottom: 150px; z-index: 100;
+      width: 64px; height: 64px; border-radius: 50%; align-items: center; justify-content: center;
+      background: rgba(8,8,16,0.7); border: 1px solid var(--hair); color: var(--torch); cursor: pointer;
+      touch-action: none; user-select: none; -webkit-user-select: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #boostBtn.held { transform: scale(1.1); box-shadow: 0 0 26px rgba(246,161,90,0.7); }
+    @media (pointer: fine) { #boostBtn { display: none !important; } }
+    #descend {
+      position: fixed; left: 50%; bottom: 150px; transform: translateX(-50%); z-index: 100;
+      align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer;
+      background: rgba(8,8,16,0.8); border: 1px solid var(--torch); border-radius: 3px; color: var(--moon);
+      font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+      box-shadow: 0 0 24px rgba(246,161,90,0.35); animation: breathe 2.4s ease-in-out infinite;
+    }
+    #descend[hidden] { display: none !important; }
+    #descend.dormant { border-color: var(--hair); color: rgba(236,232,245,0.6); box-shadow: none; animation: none; cursor: default; }
+    @keyframes breathe { 50% { box-shadow: 0 0 36px rgba(246,161,90,0.6); } }
+    body[data-state="flight"] .key-btn#flameBtn, .key-btn#flameBtn[aria-pressed="true"] { color: var(--torch); opacity: 1; filter: drop-shadow(0 0 9px rgba(246,161,90,0.7)); }
+    body:not([data-state="galaxy"]):not([data-state="flight"]) #flameBtn { opacity: 0.25; pointer-events: none; }
+
     @media (prefers-reduced-motion: reduce) {
       *, .track-info, .moon-btn, .key-btn { transition: none !important; }
     }
@@ -114,9 +243,21 @@
       .console { backdrop-filter: none; background: rgba(8, 8, 16, 0.82); }
       .track-info { backdrop-filter: none; background: rgba(8, 8, 16, 0.82); }
     }
+    @media (prefers-reduced-motion: reduce) { #descend { animation: none; } }
+    @media (pointer: coarse) {
+      .planet-label:not(.dormant) .sub { max-height: 1.6em; opacity: 1; }
+    }
     @media (max-width: 560px) {
       .hint { display: none; }
-      .console { gap: 16px; padding: 10px 18px; }
+      body[data-state="flight"] .hint { display: block; top: 18px; left: 16px; right: 16px; max-width: none; }
+      /* en el celular no cabe junto al botón de volver ni a la indicación de vuelo */
+      body[data-state="planet"] .track-info, body[data-state="flight"] .track-info { display: none; }
+      #descend { bottom: 140px; }
+      #boostBtn { bottom: 140px; right: 16px; }
+      .console { gap: 6px; padding: 8px 18px 10px; }
+      .console-row { gap: 16px; }
+      .progress { min-width: 0; width: calc(100vw - 72px); }
+      .grimoire { bottom: 118px; }
     }
   </style>
 
@@ -134,14 +275,41 @@
 <div id="canvas-container"></div>
 <div id="vignette"></div>
 
-<p class="hint">Toca la <b>luna llena</b> para comenzar · arrastra para <b>orbitar</b></p>
+<div id="planet-labels"></div>
+<div id="planet-stage"></div>
+<div id="veil"></div>
+
+<p class="hint" id="hint">Toca la <b>luna llena</b> para comenzar · toca un <b>planeta</b> para viajar</p>
+
+<div id="joystick" aria-hidden="true"><div class="knob"></div></div>
+<button id="descend" class="flight-ui" type="button" hidden></button>
+<button id="boostBtn" class="flight-ui" type="button" aria-label="Avivar la llama (impulso)">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M12 2.5 C13 6.5 18 8.5 18 14 a6 6 0 0 1 -12 0 C6 10.5 8.5 9 9 6.5 C10.2 8 10.8 9.2 11 10.5 C12.3 8.5 12.5 5.5 12 2.5 Z"/>
+    <path d="M12 21 a2.6 2.6 0 0 1 -2.6 -2.6 C9.4 16.2 12 15 12 13 C12 15 14.6 16.2 14.6 18.4 A2.6 2.6 0 0 1 12 21 Z"/>
+  </svg>
+</button>
 
 <div id="track-display" class="track-info" style="opacity: 0;">
   <div class="eyebrow">Suena ahora</div>
   <div id="track-name">Donde Nadie Pueda Ir</div>
 </div>
 
+<nav id="grimoire" class="grimoire" aria-label="Lista de canciones">
+  <div class="eyebrow">Grimorio de canciones</div>
+  <ol id="grimoire-list"></ol>
+</nav>
+
 <div class="console">
+  <div class="progress">
+    <span id="timeNow" class="time">0:00</span>
+    <div id="seek" class="seek" role="slider" tabindex="0" aria-label="Posición de la canción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="rail"><div class="fill"></div><div class="knob"></div></div>
+    </div>
+    <span id="timeTotal" class="time">0:00</span>
+  </div>
+
+  <div class="console-row">
   <div class="transport">
     <button id="prevBtn" class="moon-btn side" aria-label="Canción anterior">
       <svg viewBox="0 0 40 40" aria-hidden="true">
@@ -166,6 +334,21 @@
 
   <div class="divider"></div>
 
+  <button id="listBtn" class="key-btn" aria-label="Ver lista de canciones" aria-expanded="false" aria-controls="grimoire">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 6.5 C9.5 4.8 6 4.5 3 5.2 V19 C6 18.3 9.5 18.6 12 20.3 C14.5 18.6 18 18.3 21 19 V5.2 C18 4.5 14.5 4.8 12 6.5 Z"/>
+      <path d="M12 6.5 V20.3"/>
+      <path d="M16.5 9.2 a1.6 1.6 0 1 0 0.01 0"/>
+    </svg>
+  </button>
+
+  <button id="flameBtn" class="key-btn" aria-label="Vuelo libre: guiar la llama" aria-pressed="false">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 2.5 C13 6.5 18 8.5 18 14 a6 6 0 0 1 -12 0 C6 10.5 8.5 9 9 6.5 C10.2 8 10.8 9.2 11 10.5 C12.3 8.5 12.5 5.5 12 2.5 Z"/>
+      <path d="M12 21 a2.6 2.6 0 0 1 -2.6 -2.6 C9.4 16.2 12 15 12 13 C12 15 14.6 16.2 14.6 18.4 A2.6 2.6 0 0 1 12 21 Z"/>
+    </svg>
+  </button>
+
   <button id="pickBtn" class="key-btn" aria-label="Añadir tu propia música">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="8" cy="8" r="4.2"/>
@@ -175,7 +358,8 @@
     </svg>
   </button>
   <input type="file" id="pickFile" accept="audio/*">
-  <audio id="audio"><source src="Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
+  </div>
+  <audio id="audio" preload="metadata"><source src="music/Donde Nadie Pueda Ir.mp3" type="audio/mpeg"></audio>
 </div>
 
 <script type="module" src="./src/main.js"></script>
