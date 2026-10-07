@@ -307,8 +307,8 @@ const hint = document.getElementById('hint');
 const HINTS = {
   galaxy: 'Toca un <b>planeta</b> para viajar · arrastra para <b>orbitar</b>',
   flight: isMobile
-    ? 'Arrastra para <b>guiar la llama</b> · mantén la llama para <b>avivarla</b>'
-    : '<b>Flechas / WASD</b> para guiar la llama · <b>Shift</b> para avivarla',
+    ? 'Arrastra para <b>guiar al espíritu</b> · mantén la llama para <b>avivar su antorcha</b>'
+    : '<b>Flechas / WASD</b> para guiar al espíritu · <b>Shift</b> para avivar su antorcha',
 };
 
 function setState(s) {
@@ -434,7 +434,7 @@ function leavePlanet() {
     const { planet, returnTo } = visit;
     const r = planet.def.radius;
 
-    // al volver al vuelo, la llama reaparece junto al planeta mirando hacia afuera
+    // al volver al vuelo, el espíritu reaparece junto al planeta mirando hacia afuera
     let lookTo;
     if (returnTo === 'flight') {
       const out = planet.worldPos.clone().normalize();
@@ -556,7 +556,7 @@ function updateFlight(dt, time) {
   flightInput.update();
   spirit.update(dt, time, flightInput, audioProcessor);
 
-  // cámara que persigue a la llama
+  // cámara que persigue al espíritu
   spirit.chasePosition(_chase);
   camera.position.lerp(_chase, 1 - Math.exp(-dt * 4));
   camera.lookAt(_aim.copy(spirit.position).addScaledVector(spirit.forward, 2));
