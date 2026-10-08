@@ -190,6 +190,16 @@
     body:not([data-state="galaxy"]):not([data-state="flight"]) #planet-labels { display: none; }
     body.hovering-planet canvas { cursor: pointer; }
 
+    /* botón "volver a la galaxia" que comparten todos los planetas */
+    .planet-exit {
+      pointer-events: auto; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
+      background: rgba(8,8,16,0.7); border: 1px solid var(--hair); border-radius: 3px; cursor: pointer;
+      padding: 8px 14px 8px 10px; color: var(--selene);
+      font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+      transition: color .3s, border-color .3s, box-shadow .3s;
+    }
+    .planet-exit:hover, .planet-exit:focus-visible { color: var(--moon); border-color: var(--selene); box-shadow: 0 0 16px rgba(201,179,255,.3); outline: none; }
+
     /* escenario de los juegos y velo de transición */
     #planet-stage { position: fixed; inset: 0; z-index: 60; display: none; }
     body[data-state="planet"] #planet-stage { display: block; }

@@ -18,6 +18,7 @@ import { playlist, planets as planetDefs, loveNotes } from './data.js';
 // Juegos de cada planeta: se cargan solo al visitarlo.
 const games = {
   ritmo: () => import('./games/ritmo/index.js'),
+  retro: () => import('./games/retro/index.js'),
 };
 
 // --- ajuste por dispositivo (optimización) ---
@@ -62,7 +63,7 @@ const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
 const labelLayer = document.getElementById('planet-labels');
 const planets = planetDefs.map((def) => {
   const p = new Planet(def, labelLayer);
-  scene.add(p.group, p.orbitLine);
+  scene.add(p.group);
   return p;
 });
 const planetHitAreas = planets.map((p) => p.hitArea);
@@ -184,6 +185,9 @@ document.getElementById('pickFile').onchange = (e) => {
   playTrack(playlist.length - 1);
 };
 audio.onended = () => playTrack(currentTrackIndex + 1);
+// la luna llena refleja el estado real (también cuando un juego pausa la música)
+audio.addEventListener('play', () => setPlaying(true));
+audio.addEventListener('pause', () => setPlaying(false));
 
 // --- grimorio: lista de canciones para elegir directamente ---
 const grimoire = document.getElementById('grimoire');
@@ -371,7 +375,7 @@ let visit = null; // { planet, returnTo, returnPos, game }
 function travelTo(planet) {
   if (state !== 'galaxy' && state !== 'flight') return;
   if (!planet.awake) { planet.nudge(); return; }
-  ensurePlaying(); // el juego vive de la música
+  if (planet.def.music) ensurePlaying(); // juegos que viven de nuestra música
 
   const returnTo = state;
   visit = { planet, returnTo, returnPos: camera.position.clone(), game: null };

@@ -27,19 +27,20 @@ export const playlist = [
 // Planetas que orbitan la galaxia. Los que tienen `game` se pueden visitar;
 // los demás "duermen" hasta que se les construya su juego.
 //   orbit: radio de la órbita · speed: rad/s · phase: ángulo inicial · tilt: inclinación (radianes)
+//   band: parte de la canción a la que reacciona (bass · mid · treble)
 export const planets = [
   {
     key: 'ritmo', name: 'Planeta Ritmo', subtitle: 'Atrapa los corazones al ritmo de nuestra música',
     colors: ['#ff5d8f', '#5a189a'], radius: 0.62, orbit: 7.6, speed: 0.045, phase: 0.6, tilt: 0.12,
-    ring: true, game: 'ritmo',
+    ring: true, game: 'ritmo', music: true, band: 'bass',
   },
   {
     key: 'recuerdos', name: 'Planeta Recuerdos', subtitle: 'Aún duerme… pronto despertará',
-    colors: ['#4cc9f0', '#1d3557'], radius: 0.5, orbit: 10, speed: 0.032, phase: 2.7, tilt: -0.18,
+    colors: ['#4cc9f0', '#1d3557'], radius: 0.5, orbit: 10, speed: 0.032, phase: 2.7, tilt: -0.18, band: 'mid',
   },
   {
-    key: 'retro', name: 'Planeta Retro', subtitle: 'Aún duerme… pronto despertará',
-    colors: ['#ffd166', '#c1121f'], radius: 0.56, orbit: 12.4, speed: 0.024, phase: 4.6, tilt: 0.08,
+    key: 'retro', name: 'Planeta Retro', subtitle: 'El salón arcade de los clásicos', game: 'retro',
+    colors: ['#ffd166', '#c1121f'], radius: 0.56, orbit: 12.4, speed: 0.024, phase: 4.6, tilt: 0.08, band: 'treble',
   },
 ];
 

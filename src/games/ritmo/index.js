@@ -11,14 +11,6 @@ const CSS = `
 .ritmo { position: absolute; inset: 0; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
 .ritmo canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .ritmo .hud { position: absolute; top: 20px; left: 20px; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
-.ritmo .exit {
-  pointer-events: auto; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
-  background: rgba(8,8,16,0.7); border: 1px solid var(--hair); border-radius: 3px; cursor: pointer;
-  padding: 8px 14px 8px 10px; color: var(--selene);
-  font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-  transition: color .3s, border-color .3s, box-shadow .3s;
-}
-.ritmo .exit:hover, .ritmo .exit:focus-visible { color: var(--moon); border-color: var(--selene); box-shadow: 0 0 16px rgba(201,179,255,.3); outline: none; }
 .ritmo .score { font-family: 'Cinzel', serif; line-height: 1.1; text-shadow: 0 0 12px rgba(4,5,12,.9); }
 .ritmo .score .big { font-size: 2.2rem; font-weight: 700; color: var(--moon); font-variant-numeric: tabular-nums; }
 .ritmo .score .combo { font-size: .7rem; letter-spacing: .2em; color: var(--torch); text-transform: uppercase; min-height: 1em; }
@@ -47,7 +39,7 @@ export function mount(stage, ctx) {
   root.innerHTML = `
     <canvas></canvas>
     <div class="hud">
-      <button class="exit" type="button" aria-label="Volver a la galaxia">
+      <button class="planet-exit exit" type="button" aria-label="Volver a la galaxia">
         <svg width="18" height="18" viewBox="0 0 40 40" aria-hidden="true">
           <defs><mask id="ritmo-exit-moon"><circle cx="20" cy="20" r="15" fill="#fff"/><circle cx="29" cy="20" r="13.5" fill="#000"/></mask></defs>
           <circle cx="20" cy="20" r="15" fill="currentColor" mask="url(#ritmo-exit-moon)"/>
