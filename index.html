@@ -214,6 +214,9 @@
 
     /* escenario de los juegos y velo de transición */
     #planet-stage { position: fixed; inset: 0; z-index: 60; display: none; }
+    /* dentro de un planeta, "suena ahora" baja junto a la consola para no tapar los botones del juego */
+    body[data-state="planet"] .track-info { top: auto; bottom: 30px; right: 22px; padding: 8px 14px; }
+    @media (max-width: 1099px) { body[data-state="planet"] .track-info { display: none; } }
     body[data-state="planet"] #planet-stage { display: block; }
     #veil { position: fixed; inset: 0; z-index: 90; background: var(--void); opacity: 0; pointer-events: none; }
     body[data-state="planet"] .hint,

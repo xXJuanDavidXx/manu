@@ -13,12 +13,16 @@ import { buildShapes } from './core/shapes.js';
 import { Planet } from './entities/Planet.js';
 import { Spirit } from './entities/Spirit.js';
 import { FlightInput } from './input/FlightInput.js';
+import { Phrases } from './core/Phrases.js';
+import { Rewards } from './core/Rewards.js';
 import { playlist, planets as planetDefs, loveNotes } from './data.js';
 
 // Juegos de cada planeta: se cargan solo al visitarlo.
 const games = {
   ritmo: () => import('./games/ritmo/index.js'),
   retro: () => import('./games/retro/index.js'),
+  recuerdos: () => import('./games/recuerdos/index.js'),
+  chakras: () => import('./games/chakras/index.js'),
 };
 
 // --- ajuste por dispositivo (optimización) ---
@@ -59,6 +63,12 @@ const galaxy = new Galaxy(PARTICLE_COUNT, { pixelRatio: renderer.getPixelRatio()
 scene.add(galaxy.points);
 
 const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
+
+// Frases de él: solo orbitan las que ella ya ganó en los juegos. En móvil las
+// texturas van a la mitad (menos VRAM y menos coste de subida).
+const rewards = new Rewards({ onUnlock: (text) => phraseCloud.add(text, { fresh: true }) });
+const phraseCloud = new Phrases(rewards.won, { texScale: isMobile ? 0.5 : 1 });
+scene.add(phraseCloud.group);
 
 const labelLayer = document.getElementById('planet-labels');
 const planets = planetDefs.map((def) => {
@@ -414,6 +424,10 @@ async function enterPlanet(planet) {
       audio,
       audioProcessor,
       loveNotes,
+      playlist,
+      playTrack,
+      reward: (n, reason) => rewards.grant(n, reason),
+      getTrackIndex: () => currentTrackIndex,
       getTrack: () => playlist[currentTrackIndex],
       getConsoleTop: () => document.querySelector('.console').getBoundingClientRect().top,
       exit: leavePlanet,
@@ -638,6 +652,7 @@ function animate() {
 
   galaxy.update(time, audioProcessor, morphFactor);
   scenery.update(dt, audioProcessor);
+  phraseCloud.update(time, audioProcessor, morphFactor);
   for (const p of planets) p.update(time, dt, audioProcessor);
 
   // cámara
