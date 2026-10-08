@@ -190,6 +190,18 @@
     body:not([data-state="galaxy"]):not([data-state="flight"]) #planet-labels { display: none; }
     body.hovering-planet canvas { cursor: pointer; }
 
+    /* interruptor de órbitas: pequeño y discreto, solo en la galaxia */
+    .orbit-toggle {
+      position: fixed; left: 22px; bottom: 30px; z-index: 100; display: none;
+      width: 34px; height: 34px; padding: 6px; border: none; border-radius: 50%;
+      background: none; color: var(--selene); cursor: pointer; opacity: 0.32; line-height: 0;
+      transition: opacity 0.3s, color 0.3s, filter 0.3s;
+    }
+    body[data-state="galaxy"] .orbit-toggle { display: block; }
+    .orbit-toggle:hover, .orbit-toggle:focus-visible { opacity: 0.9; outline: none; }
+    .orbit-toggle:focus-visible { outline: 1px solid var(--selene); outline-offset: 2px; }
+    .orbit-toggle[aria-pressed="true"] { opacity: 0.75; color: var(--torch); filter: drop-shadow(0 0 6px rgba(246,161,90,0.6)); }
+
     /* botón "volver a la galaxia" que comparten todos los planetas */
     .planet-exit {
       pointer-events: auto; display: inline-flex; align-items: center; gap: 10px; align-self: flex-start;
@@ -263,6 +275,7 @@
       /* en el celular no cabe junto al botón de volver ni a la indicación de vuelo */
       body[data-state="planet"] .track-info, body[data-state="flight"] .track-info { display: none; }
       #descend { bottom: 140px; }
+      .orbit-toggle { left: auto; right: 12px; bottom: auto; top: 108px; }
       #boostBtn { bottom: 140px; right: 16px; }
       .console { gap: 6px; padding: 8px 18px 10px; }
       .console-row { gap: 16px; }
@@ -290,6 +303,14 @@
 <div id="veil"></div>
 
 <p class="hint" id="hint">Toca la <b>luna llena</b> para comenzar · toca un <b>planeta</b> para viajar</p>
+
+<button id="orbitBtn" class="orbit-toggle" type="button" aria-pressed="false" aria-label="Mostrar las órbitas de los planetas" title="Órbitas">
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+    <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(-18 12 12)"/>
+    <circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/>
+    <circle cx="20.6" cy="9.3" r="1.5" fill="currentColor" stroke="none"/>
+  </svg>
+</button>
 
 <div id="joystick" aria-hidden="true"><div class="knob"></div></div>
 <button id="descend" class="flight-ui" type="button" hidden></button>

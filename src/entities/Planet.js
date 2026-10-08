@@ -128,6 +128,20 @@ export class Planet {
     labelLayer.append(this.label);
     this._nudgeTimer = 0;
 
+    // camino de la órbita: un anillo tenue que el planeta recorre exactamente
+    // (se muestra u oculta con el interruptor de órbitas)
+    const SEG = 160;
+    const pts = new Float32Array(SEG * 3);
+    for (let i = 0; i < SEG; i++) this.orbitPoint((i / SEG) * Math.PI * 2, pts, i * 3);
+    const orbitGeo = new THREE.BufferGeometry();
+    orbitGeo.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+    this.orbitBase = this.awake ? 0.2 : 0.08;
+    this.orbitLine = new THREE.LineLoop(orbitGeo, new THREE.LineBasicMaterial({
+      color: new THREE.Color(this.awake ? a : '#ece8f5'), transparent: true,
+      opacity: this.orbitBase, blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
+    this.orbitLine.visible = false;
+
     // reacción a la música
     this.band = BANDS[def.band] ?? BANDS.bass;
     this._angle = def.phase; // avanza más rápido cuando la música sube
@@ -187,6 +201,8 @@ export class Planet {
     u.uPulse.value = L * 0.8 + K * 0.7;
     this.halo.material.opacity = (this.awake ? 0.38 : 0.1) + L * 0.35 + K * 0.3;
     this.halo.scale.setScalar(d.radius * 4.2 * (1 + L * 0.18 + K * 0.28));
+    // la órbita también brilla con su parte de la canción
+    if (this.orbitLine.visible) this.orbitLine.material.opacity = this.orbitBase * (1 + L * 1.6 + K * 1.2);
     if (this.ring) {
       this.ring.scale.setScalar(1 + K * 0.14);
       this.ring.material.opacity = 0.3 + L * 0.3 + K * 0.2;

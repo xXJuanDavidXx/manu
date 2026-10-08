@@ -63,7 +63,7 @@ const scenery = new Scenery(scene, { starCount: STAR_COUNT, isMobile });
 const labelLayer = document.getElementById('planet-labels');
 const planets = planetDefs.map((def) => {
   const p = new Planet(def, labelLayer);
-  scene.add(p.group);
+  scene.add(p.group, p.orbitLine);
   return p;
 });
 const planetHitAreas = planets.map((p) => p.hitArea);
@@ -477,6 +477,18 @@ function leavePlanet() {
     });
   }, 380);
 }
+
+// --- interruptor de órbitas (se recuerda en este navegador) ---
+const orbitBtn = document.getElementById('orbitBtn');
+function setOrbits(on) {
+  for (const p of planets) p.orbitLine.visible = on;
+  orbitBtn.setAttribute('aria-pressed', on);
+  try { localStorage.setItem('galaxia:orbits', on ? '1' : '0'); } catch { /* sin almacenamiento */ }
+}
+let orbitsOn = false;
+try { orbitsOn = localStorage.getItem('galaxia:orbits') === '1'; } catch { /* sin almacenamiento */ }
+setOrbits(orbitsOn);
+orbitBtn.onclick = () => { orbitsOn = !orbitsOn; setOrbits(orbitsOn); };
 
 // --- tocar / señalar planetas ---
 const raycaster = new THREE.Raycaster();
